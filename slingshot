@@ -33,7 +33,7 @@ if __name__ == '__main__':
 		path_source = args.pathlist
 	elif args.path:
 		path_source = args.path
-		path_ext = args.ext if args.ext else default_ext
+		path_ext = args.ext if args.ext else None
 	else:
 		print "error: neither -pathlist PATHLIST nor -path PATH specified"
 		parser.print_help()
