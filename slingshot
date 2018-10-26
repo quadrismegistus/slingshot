@@ -54,7 +54,7 @@ if __name__ == '__main__':
 	)
 
 	if not args.debug: command = 'mpirun '+command
-	if args.sbatch: command = 'sbatch --wrap="%s"' % command.replace('"','\"')
+	if args.sbatch: command = 'sbatch --wrap="%s"' % command.replace('"','\\"')
 
 
 
