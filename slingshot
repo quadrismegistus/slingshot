@@ -13,7 +13,7 @@ if __name__ == '__main__':
 	parser.add_argument('-rock',help='The name of the function in the code that takes a string filepath')
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
-	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered [default = "%s"]' % default_ext)
+	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='How many paths to process')
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
