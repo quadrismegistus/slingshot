@@ -3,7 +3,8 @@ import os
 os.system('module load py-mpi4py')
 import imp,argparse,slingshot
 
-print slingshot.__file__
+print os.getcwd()
+print __file__
 exit()
 
 if __name__ == '__main__':
