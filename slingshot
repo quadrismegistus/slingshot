@@ -60,4 +60,4 @@ if __name__ == '__main__':
 
 	command = 'module load py-mpi4py; '+command
 	print '>> EXECUTING:',command
-	#os.system(command)
+	os.system(command)
