@@ -17,6 +17,7 @@ if __name__ == '__main__':
 	parser.add_argument('-limit',help='How many paths to process')
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
+	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	args = parser.parse_args()
 
 	# Load slingshot
@@ -52,6 +53,11 @@ if __name__ == '__main__':
 		limit=limit
 	)
 
+	if not args.debug: command = 'mpirun '+command
+	if args.sbatch: command = 'sbatch --wrap="%s"' % command.replace('"','\"')
+
+
+
 	command = 'module load py-mpi4py; '+command
 	print '>> EXECUTING:',command
-	os.system(command)
+	#os.system(command)
