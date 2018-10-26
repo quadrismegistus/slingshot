@@ -20,7 +20,7 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 def print_path(path):
 	print path
 
-def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=True,cache_path=None,shuffle_paths=True):
+def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=False,cache_path=None,shuffle_paths=True):
 	if not rock:
 		print '!! rock must be a function'
 		return
@@ -53,7 +53,7 @@ def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=d
 
 	# Am I the seed process?
 	if rank == 0:
-		if not os.path.exists(cache_path): os.makedirs(cache_path)
+		if cache_results and not os.path.exists(cache_path): os.makedirs(cache_path)
 
 		segments = np.array_split(paths,size) if size>1 else [paths]
 		print '>> SLINGSHOT: %s paths divided into %s segments' % (len(paths), len(segments))
@@ -125,21 +125,53 @@ def now(now=None,seconds=True):
 
 
 #### MAIN EVENT ###
+import imp,argparse
+
+"""
+class ArgParser(argparse.ArgumentParser):
+	def error(self, message):
+		sys.stderr.write('error: %s\n' % message)
+		self.print_help()
+		sys.exit(2)
+"""
 
 if __name__ == '__main__':
-	import imp,argparse
-
 	# parse arguments
 	parser = argparse.ArgumentParser()
-	parser.add_argument('sling',help="path to the python or R file of code (ending in .py or .R)")
-	parser.add_argument('rock',help='the name of the function in the code that takes a string filepath')
-	parser.add_argument('goliath',help='a text file with a path per line')
+	parser.add_argument('-sling',help="path to the python or R file of code (ending in .py or .R)")
+	parser.add_argument('-rock',help='the name of the function in the code that takes a string filepath')
+	parser.add_argument('-pathlist',help='a text file with a path per line')
+	parser.add_argument('-path',help='a directory where files ending with -ext EXT will be considered the paths [is recursive]')
+	parser.add_argument('-ext',help='the file extension files in -path PATH must have in order to be considered [default = "%s"]' % default_ext)
 	parser.add_argument('-limit',help='how many paths to process')
 	args = parser.parse_args()
 
 	# load code
-	sling = imp.load_source('sling', args.sling)
-	rock = getattr(sling,args.rock)
+
+	# Load slingshot
+	if not args.sling or not args.rock:
+		if not args.sling: print "error: -sling SLING must be specified"
+		if not args.rock: print "error: -rock ROCK must be specified"
+		print
+		parser.print_help()
+		sys.exit(1)
+
+	# Construct Goliath
+	path_ext=None
+	if args.pathlist:
+		path_source = args.pathlist
+	elif args.path:
+		path_source = args.path
+		path_ext = args.ext if args.ext else default_ext
+	else:
+		print "error: neither -pathlist PATHLIST nor -path PATH specified"
+		parser.print_help()
+		sys.exit(1)
+
+	# Other options
 	limit = int(args.limit) if args.limit else None
 
-	slingshot(rock=rock, path_source=args.goliath,limit=limit)
+	# Execute!
+	sling = imp.load_source('sling', args.sling)
+	rock = getattr(sling,args.rock)
+	slingshot(rock=rock, path_source=path_source,path_ext=path_ext,limit=limit)

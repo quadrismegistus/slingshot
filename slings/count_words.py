@@ -5,6 +5,6 @@ import codecs
 def count_words(path):
 	with codecs.open(path,encoding='utf-8') as f:
 		count=len(f.read().split())
-	return {'data1':10, 'data2':count}
+	return {'count':count}
 
 rock_function=count_words
