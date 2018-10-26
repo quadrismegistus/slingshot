@@ -6,7 +6,7 @@ default_dir = '/Users/ryan/DH/lit/corpus/chadwyck/_txt_chadwyck/Early_English_Pr
 default_ext = '.txt'
 ##
 
-import os,sys,codecs,json,numpy as np,random
+import os,sys,codecs,json,numpy as np,random,imp
 from datetime import datetime as dt
 from mpi4py import MPI
 
@@ -19,10 +19,14 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 def print_path(path):
 	print path
 
-def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=False,cache_path=None,shuffle_paths=True):
-	if not rock:
-		print '!! rock must be a function'
+def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=False,cache_path=None,shuffle_paths=True):
+	if not sling or not rock:
+		print '!! sling or rock not specified'
 		return
+
+	sling = imp.load_source('sling', sling)
+	rock = getattr(sling,rock)
+
 	if not paths:
 		if path_source:
 			if os.path.isdir(path_source):
