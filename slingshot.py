@@ -11,8 +11,9 @@ from datetime import datetime as dt
 try:
 	from mpi4py import MPI
 except ImportError:
-	os.system('module load py-mpi4py')
-	from mpi4py import MPI
+	# os.system('module load py-mpi4py')
+	# from mpi4py import MPI
+	pass
 
 
 def get_all_paths_from_folder(rootdir,ext='.txt'):
