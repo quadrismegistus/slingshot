@@ -43,9 +43,10 @@ if __name__ == '__main__':
 	limit = int(args.limit) if args.limit else None
 
 	# Execute!
-	
+
 	command = """python -c "import slingshot; slingshot(sling={sling}, rock={rock}, path_source={path_source},path_ext={path_ext},limit={limit})" """.format(
-		rock=rock,
+		sling=args.sling,
+		rock=args.rock,
 		path_source=path_source,
 		path_ext=path_ext,
 		limit=limit
