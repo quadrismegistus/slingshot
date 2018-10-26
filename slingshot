@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 os.system('module load py-mpi4py')
+print os.environ['LOADEDMODULES']
+
 import imp,argparse,slingshot
 
 print slingshot.__file__
