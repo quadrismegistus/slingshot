@@ -6,7 +6,7 @@ default_dir = '/Users/ryan/DH/lit/corpus/chadwyck/_txt_chadwyck/Early_English_Pr
 default_ext = '.txt'
 ##
 
-import os,sys,codecs,json,numpy as np
+import os,sys,codecs,json,numpy as np,random
 from datetime import datetime as dt
 from mpi4py import MPI
 
@@ -20,14 +20,25 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 def print_path(path):
 	print path
 
-def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=True,cache_path=None):
+def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=True,cache_path=None,shuffle_paths=True):
 	if not rock:
 		print '!! rock must be a function'
 		return
 	if not paths:
-		paths=list(get_all_paths_from_folder(path_source,path_ext))[:limit] if path_source else None
-		if not paths:
-			print '!! no paths given or found at %s' % path_source if path_source else ''
+		if path_source:
+			if os.path.isdir(path_source):
+				paths=list(get_all_paths_from_folder(path_source,path_ext)) if path_source else None
+			elif os.path.exists(path_source):
+				with open(path_source) as pf:
+					paths=[line.strip() for line in pf]
+					paths=[x for x in paths if x]
+	if not paths:
+		print '!! no paths given or found at %s' % path_source if path_source else ''
+		return
+	paths=paths[:limit]
+	if shuffle_paths:
+		random.shuffle(paths)
+
 
 	if cache_results and not cache_path:
 		cache_path=os.path.join(cache_dir,rock.__name__)
@@ -120,6 +131,24 @@ def now(now=None,seconds=True):
 #### MAIN EVENT ###
 
 if __name__ == '__main__':
+	import imp,argparse
+
+	# parse arguments
+	parser = argparse.ArgumentParser()
+	parser.add_argument('sling',help="path to the python or R file of code (ending in .py or .R)")
+	parser.add_argument('rock',help='the name of the function in the code that takes a string filepath')
+	parser.add_argument('goliath',help='a text file with a path per line')
+	parser.add_argument('-limit',help='how many paths to process')
+	args = parser.parse_args()
+
+	# load code
+	sling = imp.load_source('sling', args.sling)
+	rock = getattr(sling,args.rock)
+
+	slingshot(rock=rock, path_source=args.goliath,limit=args.limit)
+
+
+if __name__ == '__main__1':
 	args=sys.argv
 	rock_function=None
 	paths=None
@@ -152,7 +181,7 @@ if __name__ == '__main__':
 
 
 	### GOLIATH
-	path_source = args[2] if num_args>2 and args[2] and os.path.exists(args[2]) and os.path.isdir(args[2]) else None
+	path_source = args[2] if num_args>2 and args[2] and os.path.exists(args[2]) else None
 	path_ext = args[3] if num_args>3 and args[3] else None
 	###
 
@@ -160,5 +189,3 @@ if __name__ == '__main__':
 	## THROW!
 	# Throw the slingshot against the goliath
 	slingshot(rock=rock_function,path_source=path_source,path_ext=path_ext)
-
-	
