@@ -52,6 +52,6 @@ if __name__ == '__main__':
 		limit=limit
 	)
 
-	command = 'module load py-mpi4py && '+command
+	command = 'module load py-mpi4py; '+command
 	print '>> EXECUTING:',command
 	os.system(command)
