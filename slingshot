@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
 	# Execute!
 
-	command = """python -c "import slingshot; slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit})" """.format(
+	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit})" """.format(
 		sling=args.sling,
 		rock=args.rock,
 		path_source=path_source,
