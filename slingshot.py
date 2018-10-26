@@ -35,9 +35,9 @@ def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=d
 	if not paths:
 		print '!! no paths given or found at %s' % path_source if path_source else ''
 		return
-	paths=paths[:limit]
 	if shuffle_paths:
 		random.shuffle(paths)
+	paths=paths[:limit]
 
 
 	if cache_results and not cache_path:
@@ -76,6 +76,7 @@ def slingshot(rock=None,paths=None,limit=None,path_source=default_dir,path_ext=d
 	results={}
 	for i,path in enumerate(paths):
 		#print 'DOING SOMETHING:',i,path
+		if not i%100: print '>> rank #%s is process #%s of %s paths...' % (rank,i+1,len(paths))
 
 		#################################################
 		# THIS IS WHERE THE ROCK FITS INTO THE SLINGSHOT
@@ -123,11 +124,6 @@ def now(now=None,seconds=True):
 
 
 
-
-
-
-
-
 #### MAIN EVENT ###
 
 if __name__ == '__main__':
@@ -144,48 +140,6 @@ if __name__ == '__main__':
 	# load code
 	sling = imp.load_source('sling', args.sling)
 	rock = getattr(sling,args.rock)
+	limit = int(args.limit) if args.limit else None
 
-	slingshot(rock=rock, path_source=args.goliath,limit=args.limit)
-
-
-if __name__ == '__main__1':
-	args=sys.argv
-	rock_function=None
-	paths=None
-	num_args=len(args)
-	if num_args<2:
-		print '!! Usage: [mpiexec -n numprocs] python [-m mpi4py] slingshot.py ROCK_FILENAME'
-		exit()
-
-	### ROCK
-	rock_filename = sys.argv[1]
-	if not os.path.exists(rock_filename):
-		print '!! Nothing exists at %s' % rock_filename
-		exit()
-
-	# Python rocks
-	if rock_filename.endswith('.py'):
-		import imp
-		rock_module = imp.load_source('rock', rock_filename)
-		rock_function = rock_module.rock_function
-
-	# R rocks
-	if rock_filename.endswith('.R'):
-		# @TODO
-		pass
-
-	if not rock_function:
-		print '!! No rock function loaded'
-		exit()
-	###
-
-
-	### GOLIATH
-	path_source = args[2] if num_args>2 and args[2] and os.path.exists(args[2]) else None
-	path_ext = args[3] if num_args>3 and args[3] else None
-	###
-
-
-	## THROW!
-	# Throw the slingshot against the goliath
-	slingshot(rock=rock_function,path_source=path_source,path_ext=path_ext)
+	slingshot(rock=rock, path_source=args.goliath,limit=limit)

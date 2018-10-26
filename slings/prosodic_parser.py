@@ -71,16 +71,11 @@ def read_processed_data_from_path(path):
 					pass
 		return ld
 
-def ld2dld(ld,key):
-	from collections import defaultdict
-	dld=defaultdict(list)
-	for d in ld:
-		dld[d[key]]+=[d]
-	return dld
 
 def postprocess_chadwyck(path):
 	import pandas as pd,numpy as np
 	ld=read_processed_data_from_path(path)
+	if not ld: return
 	#dld=ld2dld(ld,'num_line')
 	#for num_line,lld in dld.items(): #sorted(dld.items(),key=lambda (k,v): float(k)):
 	df=pd.DataFrame(ld)
