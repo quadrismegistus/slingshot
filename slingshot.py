@@ -70,7 +70,8 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_e
 	results={}
 	for i,path in enumerate(paths):
 		#print 'DOING SOMETHING:',i,path
-		if not i%100: print '>> rank #%s is process #%s of %s paths...' % (rank,i+1,len(paths))
+		#if not i%100:
+		print '>> rock #%s has knocked down #%s of %s paths...' % (rank,i,len(paths))
 
 		#################################################
 		# THIS IS WHERE THE ROCK FITS INTO THE SLINGSHOT
