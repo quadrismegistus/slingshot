@@ -51,7 +51,7 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir
 
 	# Am I the seed process?
 	if rank == 0:
-		if cache_results and cache_path not os.path.exists(cache_path): os.makedirs(cache_path)
+		if cache_results and cache_path and not os.path.exists(cache_path): os.makedirs(cache_path)
 
 		segments = np.array_split(paths,size) if size>1 else [paths]
 		print '>> SLINGSHOT: %s paths divided into %s segments' % (len(paths), len(segments))
