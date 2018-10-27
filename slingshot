@@ -24,8 +24,8 @@ if __name__ == '__main__':
 	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_rock_timestamp]')
 
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
-	parser.add_argument('-sbatch_hours',help='How many hours to ask sherlock for',default=1)
-	parser.add_argument('-sbatch_num',help='How many CPUs do you want to run?',default=4)
+	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
+	parser.add_argument('-numcpu',help='How many CPUs do you want to run?',default=4)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	args = parser.parse_args()
 
