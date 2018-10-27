@@ -21,6 +21,7 @@ if __name__ == '__main__':
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
+	parser.add_argument('-export_path','Export the current PATH to the sbatch',default=True)
 	args = parser.parse_args()
 
 	# Load slingshot
@@ -46,6 +47,9 @@ if __name__ == '__main__':
 	# Other options
 	limit = int(args.limit) if args.limit else None
 
+	# Misc
+	env_PATH = os.environ.get('PATH','') if args.export_path else None
+
 	# Execute!
 
 	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit})" """.format(
@@ -57,6 +61,7 @@ if __name__ == '__main__':
 	)
 
 	if not args.debug: command = 'mpirun '+command
+	if env_PATH: command = 'export PATH="%s"; ' % env_PATH + command
 	if args.sbatch: command = 'sbatch --wrap="%s"' % command.replace('"','\\"')
 
 
