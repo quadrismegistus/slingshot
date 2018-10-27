@@ -19,9 +19,9 @@ if __name__ == '__main__':
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='How many paths to process')
 
-	parser.add_argument('-nosave','Do not save results',action='store_true')
-	parser.add_argument('-cache','Cache partial results',action='store_true')
-	parser.add_argument('-savedir','Directory to store results in [defaults to results_sling_rock_timestamp]')
+	parser.add_argument('-nosave',help='Do not save results',action='store_true')
+	parser.add_argument('-cache',help='Cache partial results',action='store_true')
+	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_rock_timestamp]')
 
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-sbatch_hours',help='How many hours to ask sherlock for',default=1)
