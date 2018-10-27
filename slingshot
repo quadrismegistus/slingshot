@@ -78,7 +78,7 @@ if __name__ == '__main__':
 		savedir=savedir,
 		cache=args.cache
 	)
-	with open(cmd_fnfn,'w') as f: f.write(command)
+
 
 	if not args.debug:
 		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else ' '
@@ -98,4 +98,5 @@ if __name__ == '__main__':
 		command = 'module load py-mpi4py; '+command
 
 	print '>> EXECUTING:',command
+	with open(cmd_fnfn,'w') as f: f.write(command)
 	os.system(command)
