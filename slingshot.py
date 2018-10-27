@@ -1,11 +1,3 @@
-##
-# Constants
-cache_dir = '/Users/ryan/cache/slingshot'
-default_dir = '/Users/ryan/DH/lit/corpus/chadwyck/_txt_chadwyck/Early_English_Prose_Fiction'
-#default_dir = '/Users/ryan/DH/lit/corpus/chadwyck/_txt_chadwyck'
-default_ext = '.txt'
-##
-
 import os,sys,codecs,json,numpy as np,random,imp
 from datetime import datetime as dt
 from mpi4py import MPI
@@ -19,7 +11,7 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 def print_path(path):
 	print path
 
-def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=False,cache_path=None,shuffle_paths=True):
+def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True):
 	if not sling or not rock:
 		print '!! sling or rock not specified'
 		return
@@ -44,7 +36,10 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir
 
 
 	if cache_results and not cache_path:
-		cache_path=os.path.join(cache_dir,rock.__name__)
+		#cache_path=os.path.join(cache_dir,rock.__name__)
+		if results_dir: cache_path=os.path.join(results_dir,'results_cache')
+
+
 
 	# Start MPI
 	t1 = dt.now()
@@ -56,7 +51,7 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir
 
 	# Am I the seed process?
 	if rank == 0:
-		if cache_results and not os.path.exists(cache_path): os.makedirs(cache_path)
+		if cache_results and cache_path not os.path.exists(cache_path): os.makedirs(cache_path)
 
 		segments = np.array_split(paths,size) if size>1 else [paths]
 		print '>> SLINGSHOT: %s paths divided into %s segments' % (len(paths), len(segments))
@@ -94,7 +89,7 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir
 	#results=rock(paths)
 
 	# cache results?
-	if cache_results:
+	if cache_results and cache_path:
 		cache_fn = 'results.rank=%s.json' % str(rank).zfill(4)
 		cache_fnfn = os.path.join(cache_path,cache_fn)
 		with open(cache_fnfn,'wb') as cache_f:
@@ -106,7 +101,12 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir
 	if rank == 0:
 		t3 = dt.now()
 		print '>> SLINGSHOT: Finished in %s seconds.' % (t3-t1).total_seconds()
-		print RESULTS
+		if save_results and results_dir:
+			results_fn='results.json'
+			results_fnfn=os.path.join(results_dir,results_fn)
+			with codecs.open(results_fnfn,'wb') as results_f:
+				json.dump(RESULTS,results_f)
+				print '>> saved:',results_fnfn
 		return RESULTS
 
 

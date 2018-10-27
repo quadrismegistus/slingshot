@@ -18,10 +18,15 @@ if __name__ == '__main__':
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='How many paths to process')
+
+	parser.add_argument('-nosave','Do not save results',action='store_true')
+	parser.add_argument('-cache','Cache partial results',action='store_true')
+	parser.add_argument('-savedir','Directory to store results in [defaults to results_sling_rock_timestamp]')
+
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
-	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
+	parser.add_argument('-sbatch_hours',help='How many hours to ask sherlock for',default=1)
+	parser.add_argument('-sbatch_num',help='How many CPUs do you want to run?',default=4)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
-	parser.add_argument('-export_path',help='Export the current PATH to the sbatch',default=True)
 	args = parser.parse_args()
 
 	# Load slingshot
@@ -46,26 +51,35 @@ if __name__ == '__main__':
 
 	# Other options
 	limit = int(args.limit) if args.limit else None
-
-	# Misc
-	# this turned out not to be necessary:
-	#env_PATH = os.environ.get('PATH','') if args.export_path else None
+	savedir = args.savedir if args.savedir else '.'.join(os.path.basename(args.sling).split('.')[:-1] + [args.rock,now()])
 
 	# Execute!
-
-	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit})" """.format(
+	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}')" """.format(
 		sling=args.sling,
 		rock=args.rock,
 		path_source=path_source,
 		path_ext=path_ext,
-		limit=limit
+		limit=limit,
+		savedir=savedir
 	)
 
 	if not args.debug: command = 'mpirun '+command
-	#if env_PATH: command = 'export PATH="%s"; ' % env_PATH + command
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
-	if args.sbatch: command = 'sbatch -n 16 --wrap="%s"' % command.replace('"','\\"')
+	if args.sbatch:
+		command = 'sbatch -n {n} -t {h}:00:00 --wrap="{cmd}"'.format(
+			n=args.sbatch_num, h=args.sbatch_hours, cmd=command.replace('"','\\"')
+		)
 
 	command = 'module load py-mpi4py; '+command
 	print '>> EXECUTING:',command
 	os.system(command)
+
+
+def now(now=None,seconds=True):
+	import datetime as dt
+	if not now:
+		now=dt.datetime.now()
+	elif type(now) in [int,float,str]:
+		now=dt.datetime.fromtimestamp(now)
+
+	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
