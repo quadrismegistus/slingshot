@@ -48,7 +48,8 @@ if __name__ == '__main__':
 	limit = int(args.limit) if args.limit else None
 
 	# Misc
-	env_PATH = os.environ.get('PATH','') if args.export_path else None
+	# this turned out not to be necessary:
+	#env_PATH = os.environ.get('PATH','') if args.export_path else None
 
 	# Execute!
 
@@ -62,7 +63,7 @@ if __name__ == '__main__':
 
 	if not args.debug: command = 'mpirun '+command
 	#if env_PATH: command = 'export PATH="%s"; ' % env_PATH + command
-	if args.sbatch: command = 'sbatch --wrap="%s"' % command.replace('"','\\"')
+	if args.sbatch: command = 'sbatch --ntasks-per-node=16 --wrap="%s"' % command.replace('"','\\"')
 
 
 
