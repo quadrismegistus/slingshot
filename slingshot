@@ -3,8 +3,8 @@ import os,imp,argparse,sys
 #PATH_TO_SLINGSHOT = os.path.join(__file__,'slingshot.py')
 #sys.path.append(os.path.split(PATH_TO_SLINGSHOT)[0])
 #PATH_TO_SLINGSHOT = os.path.split__file__
-print __file__
-exit()
+# print __file__
+# exit()
 
 if __name__ == '__main__':
 	# Load MPI 4 py
