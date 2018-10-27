@@ -21,15 +21,15 @@ if __name__ == '__main__':
 	# parse arguments
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-sling',help="Path to the python or R file of code (ending in .py or .R)")
-	parser.add_argument('-rock',help='The name of the function in the code that takes a string filepath')
+	parser.add_argument('-stone',help='The name of the function in the code that takes a string filepath')
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='How many paths to process')
 
-	parser.add_argument('-nosave',help='Do not save results',action='store_true')
+	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
 	parser.add_argument('-cache',help='Cache partial results',action='store_true')
-	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_rock_timestamp]')
+	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_stone_timestamp]')
 
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
@@ -38,9 +38,9 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	# Load slingshot
-	if not args.sling or not args.rock:
+	if not args.sling or not args.stone:
 		if not args.sling: print "error: -sling SLING must be specified"
-		if not args.rock: print "error: -rock ROCK must be specified"
+		if not args.stone: print "error: -stone stone must be specified"
 		print
 		parser.print_help()
 		sys.exit(1)
@@ -62,21 +62,23 @@ if __name__ == '__main__':
 	savedir=args.savedir
 	if not savedir:
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
-		savedir='/'.join(['slingshot_results',module,args.rock,now()])
+		savedir='/'.join(['slingshot_results',module,args.stone,now()])
 	if not os.path.exists(savedir): os.makedirs(savedir)
 	out_fnfn=os.path.join(savedir,'output.txt')
 	err_fnfn=os.path.join(savedir,'errors.txt')
 	cmd_fnfn=os.path.join(savedir,'cmd.txt')
+	tosave=args.nosave is False
 
 	# Execute!
-	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache})" """.format(
+	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', stone='{stone}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave})" """.format(
 		sling=args.sling,
-		rock=args.rock,
+		stone=args.stone,
 		path_source=path_source,
 		path_ext=path_ext,
 		limit=limit,
 		savedir=savedir,
-		cache=args.cache
+		cache=args.cache,
+		tosave=tosave
 	)
 
 

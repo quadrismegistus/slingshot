@@ -14,7 +14,7 @@ import bs4
 def path2opath(path):
 	return path.replace('/xml/','/prosodic/').replace('.xml','.txt')
 
-def parse_chadwyck(path,meter=DEFAULT_METER,ofnfn=None,save_as=path2opath,save=True,return_result=False,force=True):
+def parse_chadwyck(path,meter=DEFAULT_METER,ofnfn=None,save_as=path2opath,save=True,return_result=False,force=False):
 	if save:
 		ofnfn=save_as(path) if not ofnfn else ofnfn
 		if not force and os.path.exists(ofnfn) and os.stat(ofnfn).st_size:
@@ -57,7 +57,7 @@ def parse_chadwyck(path,meter=DEFAULT_METER,ofnfn=None,save_as=path2opath,save=T
 		if return_result:
 			return list(res)
 
-rock_function=parse_chadwyck
+stone_function=parse_chadwyck
 
 
 

@@ -8,13 +8,13 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 			if fn.endswith(ext):
 				yield os.path.join(root,fn)
 
-def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True):
-	if not sling or not rock:
-		print '!! sling or rock not specified'
+def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True):
+	if not sling or not stone:
+		print '!! sling or stone not specified'
 		return
 
 	sling = imp.load_source('sling', sling)
-	rock = getattr(sling,rock)
+	stone = getattr(sling,stone)
 
 	if not paths:
 		if path_source:
@@ -34,7 +34,7 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_e
 
 
 	if cache_results and not cache_path:
-		#cache_path=os.path.join(cache_dir,rock.__name__)
+		#cache_path=os.path.join(cache_dir,stone.__name__)
 		if results_dir: cache_path=os.path.join(results_dir,'cache')
 
 
@@ -67,24 +67,24 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_e
 
 
 	#"""
-	# This method is by path, we ask the rock to slingshot each path
+	# This method is by path, we ask the stone to slingshot each path
 	results={}
 	for i,path in enumerate(paths):
 		#print 'DOING SOMETHING:',i,path
 		#if not i%100:
-		print '>> rock #%s has knocked down #%s of %s paths...' % (rank,i,len(paths))
+		print '>> stone #%s has knocked down #%s of %s paths...' % (rank,i,len(paths))
 
 		#################################################
-		# THIS IS WHERE THE ROCK FITS INTO THE SLINGSHOT
-		result=rock(path)
+		# THIS IS WHERE THE stone FITS INTO THE SLINGSHOT
+		result=stone(path)
 		if result is not None:
 			#results+=[(path,result)]
 			results[path]=result
 		#################################################
 	#"""
 
-	# This method we slingshot the rock at the list of paths and ask it to store the results
-	#results=rock(paths)
+	# This method we slingshot the stone at the list of paths and ask it to store the results
+	#results=stone(paths)
 
 	# cache results?
 	if cache_results and cache_path:
