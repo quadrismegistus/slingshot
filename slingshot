@@ -63,7 +63,7 @@ if __name__ == '__main__':
 	if not savedir:
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
 		savedir='/'.join(['slingshot_results',module,args.rock,now()])
-	
+
 	# Execute!
 	command = """python -c "import slingshot; slingshot.slingshot( \
 	sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', \
@@ -82,9 +82,9 @@ if __name__ == '__main__':
 		command = 'mpirun'+mpi_opts+command
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 	if args.sbatch:
-		command = 'sbatch -n {n} -t {h}:00:00 --wrap="{cmd}"'.format(
-			n=args.numcpu, h=args.hours, cmd=command.replace('"','\\"')
-		)
+		cmd=command.replace('"','\\"')
+		#command = 'sbatch -n {n} -t {h}:00:00 --wrap="{cmd}"'.format(n=args.numcpu, h=args.hours, cmd=cmd)
+		command = 'sbatch --nodes 2 --ntasks-per-node 2 --wrap="{cmd}"'.format(cmd)
 
 	# is module a command?
 	import distutils.spawn
