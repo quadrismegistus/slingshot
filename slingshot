@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
-	parser.add_argument('-export_path','Export the current PATH to the sbatch',default=True)
+	parser.add_argument('-export_path',help='Export the current PATH to the sbatch',default=True)
 	args = parser.parse_args()
 
 	# Load slingshot
