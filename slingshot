@@ -65,7 +65,7 @@ if __name__ == '__main__':
 		savedir='/'.join(['slingshot_results',module,args.rock,now()])
 	if not os.path.exists(savedir): os.makedirs(savedir)
 	out_fnfn=os.path.join(savedir,'output.txt')
-	out_fnfn=os.path.join(savedir,'errors.txt')
+	err_fnfn=os.path.join(savedir,'errors.txt')
 	cmd_fnfn=os.path.join(savedir,'cmd.txt')
 
 	# Execute!
