@@ -157,15 +157,22 @@ def chadwyck_xml_to_txt(xml_string, OK=['l','lb'], BAD=['note'], body_tag='poem'
 			ent.name='stanza'
 			num_stanzas+=1
 	txt=[]
+	num_lines=0
 	if not num_stanzas:
 		for line in dom('l'):
 			if line_lim and len(txt)>=line_lim: break
-			txt+=[line.text]
+			txt+=[line.text.strip()]
+			num_lines+=1
+			if num_lines>=line_lim: break
 	else:
 		for stanza in dom('stanza'):
 			if line_lim and len(txt)>=line_lim: break
 			for line in stanza('l'):
 				txt+=[line.text.strip()]
+				num_lines+=1
+				if num_lines>=line_lim: break
+			if num_lines>=line_lim: break
+			txt+=['']
 
 	txt='\n'.join(txt).replace(u'∣','').strip()
 	for k,v in REPLACEMENTS.items():

@@ -63,6 +63,10 @@ if __name__ == '__main__':
 	if not savedir:
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
 		savedir='/'.join(['slingshot_results',module,args.rock,now()])
+	if not os.path.exists(savedir): os.makedirs(savedir)
+	out_fnfn=os.path.join(savedir,'output.txt')
+	out_fnfn=os.path.join(savedir,'errors.txt')
+	cmd_fnfn=os.path.join(savedir,'cmd.txt')
 
 	# Execute!
 	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache})" """.format(
@@ -74,6 +78,7 @@ if __name__ == '__main__':
 		savedir=savedir,
 		cache=args.cache
 	)
+	with open(cmd_fnfn,'w') as f: f.write(command)
 
 	if not args.debug:
 		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else ' '
@@ -81,9 +86,10 @@ if __name__ == '__main__':
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 	if args.sbatch:
 		cmd=command.replace('"','\\"')
-		#command = 'sbatch -n {n} -c 1 -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
-		#command = 'sbatch -n {n} -c 1 --mem-per-cpu=2G -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
-		command = 'sbatch --nodes 2 --ntasks-per-node 2 --wrap="{cmd}"'.format(cmd=cmd)
+		sbatch = 'sbatch --output={out} --error={err} --jobname={jobname}'.format(out=out_fnfn,err=err_fnfn,jobname=savedir[-10:])
+		#command = sbatch+' -n {n} -c 1 -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
+		#command = sbatch+' -n {n} -c 1 --mem-per-cpu=2G -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
+		command = sbatch+' --output={out} --error --nodes 2 --ntasks-per-node 2 --wrap="{cmd}"'.format(cmd=cmd)
 
 	# is module a command?
 	import distutils.spawn
