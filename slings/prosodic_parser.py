@@ -26,6 +26,7 @@ def parse_chadwyck(path,meter=DEFAULT_METER,ofnfn=None,save_as=path2opath,save=T
 		xml_string=f.read()
 		txt = chadwyck_xml_to_txt(xml_string)
 		text = p.Text(txt)
+		print '##',len(txt.split('\n')),len(text.lines()),LINE_LIM
 		text.parse(meter=meter,line_lim=LINE_LIM)
 		res=text.stats_lines_ot(save=False,meter=meter)
 		#print '>> RESULT for path "%s": %s' % (path,res)
