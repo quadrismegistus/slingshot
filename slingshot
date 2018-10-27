@@ -78,7 +78,7 @@ if __name__ == '__main__':
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 	if args.sbatch:
 		command = 'sbatch -n {n} -t {h}:00:00 --wrap="{cmd}"'.format(
-			n=args.sbatch_num, h=args.sbatch_hours, cmd=command.replace('"','\\"')
+			n=args.numcpu, h=args.hours, cmd=command.replace('"','\\"')
 		)
 
 	command = 'module load py-mpi4py; '+command
