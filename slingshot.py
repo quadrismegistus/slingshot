@@ -11,7 +11,7 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 def print_path(path):
 	print path
 
-def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=default_dir,path_ext=default_ext,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True):
+def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True):
 	if not sling or not rock:
 		print '!! sling or rock not specified'
 		return
