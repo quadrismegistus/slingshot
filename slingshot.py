@@ -67,7 +67,6 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 	paths = segment
 	#print rank, len(paths), paths[0]
 
-
 	#"""
 	# This method is by path, we ask the stone to slingshot each path
 	results={}
