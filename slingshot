@@ -18,9 +18,6 @@ def now(now=None,seconds=True):
 
 
 if __name__ == '__main__':
-	# Load MPI 4 py
-	os.system('module load py-mpi4py')
-
 	# parse arguments
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-sling',help="Path to the python or R file of code (ending in .py or .R)")
@@ -62,25 +59,37 @@ if __name__ == '__main__':
 
 	# Other options
 	limit = int(args.limit) if args.limit else None
-	savedir = args.savedir if args.savedir else '.'.join(os.path.basename(args.sling).split('.')[:-1] + [args.rock,now()])
-
+	savedir=args.savedir
+	if not savedir:
+		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
+		savedir='/'.join(['slingshot_results',module,args.rock,now()])
+	
 	# Execute!
-	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}')" """.format(
+	command = """python -c "import slingshot; slingshot.slingshot( \
+	sling='{sling}', rock='{rock}', path_source='{path_source}', path_ext='{path_ext}', \
+	limit={limit}, results_dir='{savedir}', cache_results={cache})" """.format(
 		sling=args.sling,
 		rock=args.rock,
 		path_source=path_source,
 		path_ext=path_ext,
 		limit=limit,
-		savedir=savedir
+		savedir=savedir,
+		cache=args.cache
 	)
 
-	if not args.debug: command = 'mpirun '+command
+	if not args.debug:
+		mpi_opts = ' -np %s ' % args.numcpu if not args.sbatch and args.numcpu else ' '
+		command = 'mpirun'+mpi_opts+command
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 	if args.sbatch:
 		command = 'sbatch -n {n} -t {h}:00:00 --wrap="{cmd}"'.format(
 			n=args.numcpu, h=args.hours, cmd=command.replace('"','\\"')
 		)
 
-	command = 'module load py-mpi4py; '+command
+	# is module a command?
+	import distutils.spawn
+	if distutils.spawn.find_executable("module"):
+		command = 'module load py-mpi4py; '+command
+
 	print '>> EXECUTING:',command
 	os.system(command)

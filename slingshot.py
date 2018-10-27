@@ -34,7 +34,7 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_e
 
 	if cache_results and not cache_path:
 		#cache_path=os.path.join(cache_dir,rock.__name__)
-		if results_dir: cache_path=os.path.join(results_dir,'results_cache')
+		if results_dir: cache_path=os.path.join(results_dir,'cache')
 
 
 	# Start MPI
@@ -99,6 +99,7 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_e
 		t3 = dt.now()
 		print '>> SLINGSHOT: Finished in %s seconds.' % (t3-t1).total_seconds()
 		if save_results and results_dir:
+			if not os.path.exists(results_dir): os.makedirs(results_dir)
 			results_fn='results.json'
 			results_fnfn=os.path.join(results_dir,results_fn)
 			with codecs.open(results_fnfn,'wb') as results_f:
