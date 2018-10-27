@@ -63,9 +63,7 @@ if __name__ == '__main__':
 
 	if not args.debug: command = 'mpirun '+command
 	#if env_PATH: command = 'export PATH="%s"; ' % env_PATH + command
-	if args.sbatch: command = 'sbatch --ntasks-per-node=16 --wrap="%s"' % command.replace('"','\\"')
-
-
+	if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 
 	command = 'module load py-mpi4py; '+command
 	print '>> EXECUTING:',command
