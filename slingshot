@@ -86,7 +86,7 @@ if __name__ == '__main__':
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 	if args.sbatch:
 		cmd=command.replace('"','\\"')
-		sbatch = 'sbatch --output={out} --error={err} --jobname={jobname}'.format(out=out_fnfn,err=err_fnfn,jobname=savedir[-10:])
+		sbatch = 'sbatch --output={out} --error={err} --job-name={jobname}'.format(out=out_fnfn,err=err_fnfn,jobname=savedir[-10:])
 		#command = sbatch+' -n {n} -c 1 -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
 		#command = sbatch+' -n {n} -c 1 --mem-per-cpu=2G -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
 		command = sbatch+' --nodes 2 --ntasks-per-node 2 --wrap="{cmd}"'.format(cmd=cmd)
