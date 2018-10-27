@@ -27,9 +27,10 @@ def slingshot(sling=None,rock=None,paths=None,limit=None,path_source=None,path_e
 	if not paths:
 		print '!! no paths given or found at %s' % path_source if path_source else ''
 		return
+	paths=paths[:limit]
 	if shuffle_paths:
 		random.shuffle(paths)
-	paths=paths[:limit]
+
 
 
 	if cache_results and not cache_path:

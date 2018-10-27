@@ -14,10 +14,10 @@ import bs4
 def path2opath(path):
 	return path.replace('/xml/','/prosodic/').replace('.xml','.txt')
 
-def parse_chadwyck(path,meter=DEFAULT_METER,ofnfn=None,save_as=path2opath,save=True,return_result=False):
+def parse_chadwyck(path,meter=DEFAULT_METER,ofnfn=None,save_as=path2opath,save=True,return_result=False,force=True):
 	if save:
 		ofnfn=save_as(path) if not ofnfn else ofnfn
-		if os.path.exists(ofnfn) and os.stat(ofnfn).st_size:
+		if not force and os.path.exists(ofnfn) and os.stat(ofnfn).st_size:
 			# Already done!
 			print '>> already saved:',ofnfn
 			return
