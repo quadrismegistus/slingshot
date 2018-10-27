@@ -6,6 +6,17 @@ import os,imp,argparse,sys
 # print __file__
 # exit()
 
+
+def now(now=None,seconds=True):
+	import datetime as dt
+	if not now:
+		now=dt.datetime.now()
+	elif type(now) in [int,float,str]:
+		now=dt.datetime.fromtimestamp(now)
+
+	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
+
+
 if __name__ == '__main__':
 	# Load MPI 4 py
 	os.system('module load py-mpi4py')
@@ -73,13 +84,3 @@ if __name__ == '__main__':
 	command = 'module load py-mpi4py; '+command
 	print '>> EXECUTING:',command
 	os.system(command)
-
-
-def now(now=None,seconds=True):
-	import datetime as dt
-	if not now:
-		now=dt.datetime.now()
-	elif type(now) in [int,float,str]:
-		now=dt.datetime.fromtimestamp(now)
-
-	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
