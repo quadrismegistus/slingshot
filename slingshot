@@ -2,40 +2,6 @@
 #encoding=utf-8
 import os,imp,argparse,sys
 
-SLINGSHOT="""
-           ,'-',
-          :-----:
-      (''' , - , ''')
-      \\   ' .  , `  /
-       \\  '   ^  ? /
-        \\ `   -  ,'
-         `j_ _,'
-    ,- -`\\ \\  /f
-  ,-      \\_\\/_/'-
- ,                 `,
- ,                   ,
-      /\\          \\
-|    /             \\   ',
-,   f  :           :`,  ,
-<...\\  ,           : ,- '
-\\,,,,\\ ;           : j  '
- \\    \\            :/^^^^'
-  \\    \\            ; ''':
-    \\   -,         -`.../
-     '    - -,`,--`
-      \\_._'-- '---:
- _______  _       _________ _        _______  _______           _______ _________
-(  ____ \\( \\      \\__   __/( (    /|(  ____ \\(  ____ \\|\\     /|(  ___  )\\__   __/
-| (    \\/| (         ) (   |  \\  ( || (    \\/| (    \\/| )   ( || (   ) |   ) (
-| (_____ | |         | |   |   \\ | || |      | (_____ | (___) || |   | |   | |
-(_____  )| |         | |   | (\\ \\) || | ____ (_____  )|  ___  || |   | |   | |
-      ) || |         | |   | | \\   || | \\_  )      ) || (   ) || |   | |   | |
-/\\____) || (____/\\___) (___| )  \\  || (___) |/\\____) || )   ( || (___) |   | |
-\\_______)(_______/\\_______/|/    )_)(_______)\\_______)|/     \\|(_______)   )_(
-
-"""
-
-
 def now(now=None,seconds=False):
 	import datetime as dt
 	if not now:
@@ -44,31 +10,6 @@ def now(now=None,seconds=False):
 		now=dt.datetime.fromtimestamp(now)
 
 	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
-
-
-def interactive(parser):
-	import readline
-	args=parser.parse_args()
-	readline.set_completer_delims('\t')
-	if 'libedit' in readline.__doc__:
-		readline.parse_and_bind("bind ^I rl_complete")
-	else:
-		readline.parse_and_bind("tab: complete")
-
-	arg2help=dict([(x.dest,x.help) for x in parser.__dict__['_actions']])
-
-	print SLINGSHOT
-	print "[INTERACTIVE VERSION (run \"slingshot --help\" for non-interactive)]\n"
-	#print parser.format_help()
-
-	try:
-		args.sling = raw_input('>> SLING: '+arg2help['sling']+'\n>> ')
-		args.sling = raw_input('\n>> STONE: '+arg2help['stone']+'\n>> ')
-	except (KeyboardInterrupt,EOFError) as e:
-		print '\n>> goodbye'
-		exit()
-
-	return args
 
 
 if __name__ == '__main__':
@@ -93,6 +34,7 @@ if __name__ == '__main__':
 
 	# If no arguments... go into interactive mode!
 	if len(sys.argv)<2:
+		from interactive_slingshot import interactive
 		args = interactive(parser)
 
 	# Load slingshot

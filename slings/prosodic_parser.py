@@ -182,3 +182,9 @@ def chadwyck_xml_to_txt(xml_string, OK=['l','lb'], BAD=['note'], body_tag='poem'
 	for k,v in REPLACEMENTS.items():
 		txt=txt.replace(k,v)
 	return txt
+
+
+
+####
+
+STONES = ['parse_chadwyck', 'postprocess_chadwyck']

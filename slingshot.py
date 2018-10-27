@@ -1,6 +1,8 @@
 import os,sys,codecs,json,numpy as np,random,imp
 from datetime import datetime as dt
 from mpi4py import MPI
+import slingshot_config
+CONFIG={} if not slingshot_config.CONFIG else slingshot_config.CONFIG
 
 def get_all_paths_from_folder(rootdir,ext='.txt'):
 	for root, subdirs, files in os.walk(rootdir):
