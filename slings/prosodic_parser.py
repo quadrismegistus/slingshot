@@ -109,7 +109,7 @@ def postprocess_chadwyck(path):
 def path2poemid(path):
 	poem_id='/'.join(path.split('/')[-3:])
 	poem_id=poem_id.split('.')[0]
-	return
+	return poem_id
 
 
 
