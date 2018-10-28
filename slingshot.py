@@ -1,4 +1,4 @@
-import os,sys,codecs,json,numpy as np,random,imp
+import os,sys,codecs,json,numpy as np,random,imp,csv
 from datetime import datetime as dt
 from mpi4py import MPI
 import slingshot_config
@@ -117,7 +117,6 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 				for path,pathd in resultset.items():
 					header|=set(pathd.keys())
 			header=['_path']+sorted(list(header))
-
 			with codecs.open(os.path.join(results_dir,'results.txt'),'w',encoding='utf-8') as results_f:
 				writer = csv.DictWriter(fieldnames=header)
 				writer.writeheader()
