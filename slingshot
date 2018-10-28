@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
+	parser.add_argument('-mem',help='How much memory should each CPU have',default='2G')
 	parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=4)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
@@ -93,7 +94,7 @@ if __name__ == '__main__':
 		sbatch = 'sbatch --output={out} --error={err} --job-name={jobname}'.format(out=out_fnfn,err=err_fnfn,jobname=jobname)
 
 		# v1
-		command = sbatch+' -n {n} -c 1 -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
+		command = sbatch+' -n {n} -c 1 --mem-per-cpu {mem} -t {h}:00:00 --wrap="{cmd}"'.format(mem=args.mem, n=args.parallel, h=args.hours, cmd=cmd)
 		# v1b
 		#command = sbatch+' -n {n} -c 1 --mem-per-cpu=2G -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
 
