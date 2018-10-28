@@ -111,5 +111,5 @@ if __name__ == '__main__':
 			command = command + ' > {out}'.format(out='/dev/null')
 
 	print '>> EXECUTING:',command
-	with open(cmd_fnfn,'w') as f: f.write(command)
+	with open(cmd_fnfn,'w') as f: f.write(command+'\n')
 	os.system(command)
