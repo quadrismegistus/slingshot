@@ -5,7 +5,7 @@ DEFAULT_METER ='meter_ryan'
 LINE_LIM = 100
 
 ## IMPORTS
-import prosodic as p,codecs,os
+import prosodic as p,codecs,os,csv
 p.config['en_TTS_ENGINE']='none'
 import bs4
 
