@@ -1,4 +1,10 @@
 import os,sys,codecs,json,numpy as np,random,imp
+
+try:
+	import ujson as json
+except ImportError:
+	import json
+
 import unicodecsv as csv
 from datetime import datetime as dt
 from mpi4py import MPI
@@ -43,7 +49,7 @@ def load_stone_in_sling(path_sling,stone_name):
 			stone = lambda x: rconvert(R[stone_name](x))
 			return stone
 
-def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True):
+def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True):
 	if not sling or not stone:
 		print '!! sling or stone not specified'
 		return
@@ -101,7 +107,21 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 
 	#"""
 	# This method is by path, we ask the stone to slingshot each path
-	results={}
+	# cache results?
+	writer=None
+	if cache_results and cache_path:
+		cache_fn = 'results.rank=%s.json' % str(rank).zfill(4)
+		cache_fnfn = os.path.join(cache_path,cache_fn)
+		#with open(cache_fnfn,'wb') as cache_f:
+		#	json.dump(results,cache_f)
+		#	print '>> saved:',cache_fnfn
+
+		#writer=JSONAutoArray.ArrayWriter(f)
+		writer=JSONStreamWriter(cache_fnfn)
+
+
+
+	results=[]
 	for i,path in enumerate(paths):
 		#print 'DOING SOMETHING:',i,path
 		#if not i%100:
@@ -111,25 +131,27 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 		# THIS IS WHERE THE stone FITS INTO THE SLINGSHOT
 		result=stone(path)
 		if result is not None:
-			#results+=[(path,result)]
-			results[path]=result
+			path_result=(path,result)
+			if not stream_results: results+=[path_result]
 			#print ">> RESULT FOR PATH '%s': %s" % (path,result)
+			if writer: writer.write(path_result)
 		#################################################
 	#"""
+	if writer=writer.close()
 
 	# This method we slingshot the stone at the list of paths and ask it to store the results
 	#results=stone(paths)
 
-	# cache results?
-	if cache_results and cache_path:
-		cache_fn = 'results.rank=%s.json' % str(rank).zfill(4)
-		cache_fnfn = os.path.join(cache_path,cache_fn)
-		with open(cache_fnfn,'wb') as cache_f:
-			json.dump(results,cache_f)
-			print '>> saved:',cache_fnfn
+
 
 	RESULTS = comm.gather(results, root=0)
 
+
+	def stream_cached_jsons(cache_path=cache_path):
+		for fn in os.listdir(cache_path):
+			if not fn.endswith('.json'): continue
+			if obj in iterload(os.path.join(cache_path,fn)):
+				yield obj
 
 	if rank == 0:
 		t3 = dt.now()
@@ -141,26 +163,53 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 			# Save JSON
 			results_fn='results.json'
 			results_fnfn=os.path.join(results_dir,results_fn)
-			with codecs.open(results_fnfn,'wb') as results_f:
-				json.dump(RESULTS,results_f)
-				print '>> saved:',results_fnfn
+			if not stream_results:
+				with codecs.open(results_fnfn,'wb') as results_f:
+					json.dump(RESULTS,results_f)
+					print '>> saved:',results_fnfn
+			else:
+				# Stream JSON write
+				Writer=JSONAutoArray.ArrayWriter(results_fnfn)
+				for obj in stream_cached_jsons():
+					Writer.write(obj)
+				Writer.close()
 
-			# Save TSV
-			header=set()
-			for resultset in RESULTS:
-				for path,pathd in resultset.items():
-					header|=set(pathd.keys())
-			header=['_path']+sorted(list(header))
-			results_fnfn_txt=os.path.join(results_dir,'results.txt')
-			LD=[]
-			with open(results_fnfn_txt,'wb') as results_f_txt:
-				writer = csv.DictWriter(results_f_txt,delimiter='\t',fieldnames=header)
-				writer.writeheader()
-				for resultset in RESULTS:
-					for path,pathd in resultset.items():
-						pathd['_path']=path
-						writer.writerow(pathd)
-						LD+=[pathd]
-				print '>> saved:',results_fnfn_txt
+			# Stream-save TSV
+			if save_txt:
+				# First find KEYS
+				KEYS=set()
+				for path,result in iterload(results_fnfn):
+					if hasattr(result,'keys'):
+						KEYS|=set(result.keys())
+
+				# Then loop again to write
+				header=['_path']+sorted(list(KEYS))
+				results_fnfn_txt=os.path.join(results_dir,'results.txt')
+				with open(results_fnfn_txt,'wb') as results_f_txt:
+					writer = csv.DictWriter(results_f_txt,delimiter='\t',fieldnames=header)
+					writer.writeheader()
+					for obj in
+							pathd['_path']=path
+							writer.writerow(pathd)
+							LD+=[pathd]
+					print '>> saved:',results_fnfn_txt
 
 		return LD
+
+
+class JSONStreamWriter(object):
+	def __init__(self,filename,encoding='utf-8'):
+		self.file=codecs.open(filename,'w',encoding=encoding)
+
+	def write(self,obj):
+		oline=json.dumps(obj)
+		oline=oline.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t')
+		self.file.write(oline+'\n')
+
+	def close(self):
+		self.file.close()
+
+def iterload(filename):
+	with codecs.open(filename,'r',encoding=encoding) as f:
+		for line in f:
+			yield json.loads(line)
