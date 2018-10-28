@@ -121,7 +121,7 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 			header=['_path']+sorted(list(header))
 			results_fnfn_txt=os.path.join(results_dir,'results.txt')
 			LD=[]
-			with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:
+			with open(results_fnfn_txt,'wb') as results_f_txt:
 				writer = csv.DictWriter(results_f_txt,delimiter='\t',fieldnames=header)
 				writer.writeheader()
 				for resultset in RESULTS:
