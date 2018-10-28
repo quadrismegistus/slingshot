@@ -5,7 +5,8 @@ DEFAULT_METER ='meter_ryan'
 LINE_LIM = 100
 
 ## IMPORTS
-import prosodic as p,codecs,csv,os
+import prosodic as p,codecs,os
+from backports import csv
 p.config['en_TTS_ENGINE']='none'
 import bs4
 
@@ -180,7 +181,6 @@ def gen_metadata(path):
 	md['author_id']=idx.split('/')[1]
 	md['text_id']=idx.split('/')[1]
 
-	print md
 	return md
 
 

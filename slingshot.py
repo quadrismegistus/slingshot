@@ -1,4 +1,5 @@
-import os,sys,codecs,json,numpy as np,random,imp,csv
+import os,sys,codecs,json,numpy as np,random,imp
+from backports import csv
 from datetime import datetime as dt
 from mpi4py import MPI
 import slingshot_config
