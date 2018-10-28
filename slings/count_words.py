@@ -15,7 +15,7 @@ def count_words_fast(path):
 		return Counter(chain.from_iterable(map(tokenize_fast, f)))
 
 def tokenize_fast(line):
-	return re.findall("[A-Z]{2,}(?![a-z])|[A-Z][a-z]+(?=[A-Z])|[\'\w\-]+",line).lower()
+	return re.findall("[A-Z]{2,}(?![a-z])|[A-Z][a-z]+(?=[A-Z])|[\'\w\-]+",line.lower())
 
 
 ###
