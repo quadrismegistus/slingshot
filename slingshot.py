@@ -97,14 +97,35 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 
 	RESULTS = comm.gather(results, root=0)
 
+
 	if rank == 0:
 		t3 = dt.now()
 		print '>> SLINGSHOT: Finished in %s seconds.' % (t3-t1).total_seconds()
 		if save_results and results_dir:
 			if not os.path.exists(results_dir): os.makedirs(results_dir)
+
+			# Save JSON
 			results_fn='results.json'
 			results_fnfn=os.path.join(results_dir,results_fn)
 			with codecs.open(results_fnfn,'wb') as results_f:
 				json.dump(RESULTS,results_f)
 				print '>> saved:',results_fnfn
+
+			# Save TSV
+			header={}
+			for resultset in RESULTS:
+				for path,pathd in resultset.items():
+					header|=set(pathd.keys())
+			header=['_path']+sorted(list(header))
+
+			with codecs.open(os.path.join(results_dir,'results.txt'),'w',encoding='utf-8') as results_f:
+				writer = csv.DictWriter(fieldnames=header)
+				writer.writeheader()
+				for resultset in RESULTS:
+					for path,pathd in resultset.items():
+						pathd['_path']=path
+						writer.writerow(pathd)
+
+
+
 		return RESULTS
