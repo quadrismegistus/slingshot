@@ -106,6 +106,82 @@ def postprocess_chadwyck(path):
 	final_data = pivot.agg(np.mean)
 	return dict(final_data)
 
+def path2poemid(path):
+	poem_id='/'.join(path.split('/')[-3:])
+	poem_id=poem_id.split('.')[0]
+	return poem_id
+
+
+
+
+STANZA_TAGS = ['stanza','versepara','pdiv']
+LINE_TAGS = ['l','lb']
+def gen_metadata(path):
+	def grab_tag(tag,line):
+		if tag.lower() in line:
+			tagx=tag.lower()
+		elif tag.upper() in line:
+			tagx=tag.upper()
+		else:
+			return
+		return line.split('<'+tagx+'>')[1].split('</'+tagx+'>')[0].strip()
+
+	md={}
+	num_lines=0
+	num_stanzas=0
+	idx=path2poemid(path)
+	md['meta_genre']=[]
+	with open(path) as f:
+		for line in f:
+			#if '<doc>' in line: break
+			tag2key = {
+				'T1':'title',
+				'A1':'author',
+				'Y1':'year',
+				'T2':'title_volume',
+				'ID':'idz',
+				'attrhyme':'meta_rhymes',
+				'attperi':'meta_period'
+			}
+
+			if '<T1>' in line: md['title']=line.split('<T1>')[1].split('</T1>')[0].strip()
+			if '<t1>' in line: md['title']=line.split('<t1>')[1].split('</t1>')[0].strip()
+			if '<A1>' in line: md['author']=line.split('<A1>')[1].split('</A1>')[0].strip()
+			if '<a1>' in line: md['author']=line.split('<a1>')[1].split('</a1>')[0].strip()
+			if '<Y1>' in line: md['year']=line.split('<Y1>')[1].split('</Y1>')[0].strip()
+			if '<y1>' in line: md['year']=line.split('<y1>')[1].split('</y1>')[0].strip()
+			if '<T2>' in line: md['title_volume']=line.split('<T2>')[1].split('</T2>')[0].strip()
+			if '<t2>' in line: md['title_volume']=line.split('<t2>')[1].split('</t2>')[0].strip()
+			if '<ID>' in line: md['idz']=line.split('<ID>')[1].split('</ID>')[0].strip()
+			if '<id>' in line: md['idz']=line.split('<id>')[1].split('</id>')[0].strip()
+
+			#if '<attrhyme>' in line: md['idz']=line.split('<id>')[1].split('</id>')[0].strip()
+			#if '<id>' in line: md['idz']=line.split('<id>')[1].split('</id>')[0].strip()
+			md['meta_genre'] += [attg.split('<attgenre>')[-1] for attg in line.split('</attgenre>')[:-1]]
+			for lntag in LINE_TAGS:
+				if '<'+lntag+'>' in line or '</'+lntag+'>' in line:
+					num_lines+=1
+			for stanzatag in STANZA_TAGS:
+				if stanzatag in line:
+					num_stanzas+=1
+
+
+	if not 'modern/' in idx and not 'faber' in idx:
+		if 'american' in idx:
+			md['nation']='American'
+		else:
+			md['nation']='British'
+	md['medium']='Verse'
+	md['id']=idx
+	md['genre']=md['meta_genre']='|'.join(md['meta_genre'])
+	md['num_lines']=num_lines
+	md['num_stanzas']=num_stanzas
+	md['subcorpus']=idx.split('/')[0]
+	md['author_id']=idx.split('/')[1]
+	md['text_id']=idx.split('/')[1]
+
+	print md
+	return md
 
 
 ### PREPROCESS
