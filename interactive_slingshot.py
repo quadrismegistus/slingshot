@@ -117,7 +117,7 @@ def interactive(parser, SLING_EXT=['py','R']):
 			args.savedir = raw_input('\n>> SAVEDIR: Directory to store results in [%s]' % default_savedir  + '\n>> ').strip()
 			args.cache = raw_input('\n>> CACHE: Cache partial results? [N]\n>> (Y/N) ').strip().lower()=='y'
 
-		args.quiet = raw_input('\n>> QUIET: %s? [N]\n>> (Y/N) ' % arg2help['debug']).strip().lower()=='y'
+		args.quiet = raw_input('\n>> QUIET: %s? [N]\n>> (Y/N) ' % arg2help['quiet']).strip().lower()=='y'
 		args.limit = raw_input('\n>> LIMIT: '+arg2help['limit']+' [None]\n>> ').strip()
 
 		print
