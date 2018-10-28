@@ -94,7 +94,7 @@ def postprocess_chadwyck(path):
 	df['num_ss']=[ meter.count('ss') for meter in df['meter'] ]
 	num_sylls = df['num_sylls']=[ len(meter) for meter in df['meter'] ]
 
-	df_numeric = df.select_dtypes('number')
+	df_numeric = df.select_dtypes(np.number)
 
 	# Normalize by number of syllables: normalize per 10 syllables
 	df_numeric = df_numeric.divide(num_sylls,axis=0) * 10
