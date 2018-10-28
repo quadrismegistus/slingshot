@@ -131,7 +131,7 @@ def gen_metadata(path):
 	num_stanzas=0
 	idx=path2poemid(path)
 	md['meta_genre']=[]
-	with open(path) as f:
+	with codecs.open(path,encoding='utf-8') as f:
 		for line in f:
 			#if '<doc>' in line: break
 			tag2key = {
