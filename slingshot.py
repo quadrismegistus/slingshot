@@ -112,7 +112,7 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 				print '>> saved:',results_fnfn
 
 			# Save TSV
-			header={}
+			header=set()
 			for resultset in RESULTS:
 				for path,pathd in resultset.items():
 					header|=set(pathd.keys())
