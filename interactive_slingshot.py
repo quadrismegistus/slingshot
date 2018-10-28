@@ -97,7 +97,7 @@ def interactive(parser, SLING_EXT=['py','R']):
 		print HR
 		print 'OPTIONAL SECTION'
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
-		default_savedir='/'.join(['slingshot_results',module,args.stone,now()])
+		default_savedir='/'.join(['results_slingshot',module,args.stone,now()])
 
 		args.sbatch = raw_input('\n>> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]\n>> (Y/N) ').strip().lower()=='y'
 		if args.sbatch:

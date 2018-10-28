@@ -63,7 +63,7 @@ if __name__ == '__main__':
 	savedir=args.savedir
 	if not savedir:
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
-		savedir='/'.join(['slingshot_results',module,args.stone,now()])
+		savedir='/'.join(['results_slingshot',module,args.stone,now()])
 	if not os.path.exists(savedir): os.makedirs(savedir)
 	out_fnfn=os.path.join(savedir,'output.txt')
 	err_fnfn=os.path.join(savedir,'errors.txt')
