@@ -48,22 +48,27 @@ def interactive(parser, SLING_EXT=['py','R']):
 
 		# STONE
 		print HR
-		import imp,inspect
-		sling = imp.load_source('sling', args.sling)
-		functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
-		functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
-		tabber.createListCompleter(functions)
+		if args.sling.endswith('.py'):
+			import imp,inspect
+			sling = imp.load_source('sling', args.sling)
+			functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
+			functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
+			tabber.createListCompleter(functions)
+		else:
+			functions_str=''
 		while not args.stone:
-			readline.set_completer(tabber.listCompleter)
+
 			#prompt='\n>> STONE: {help}\noptions: {opts}\n>>'.format(help=arg2help['stone'], opts=', '.join(functions))
 			#prompt='\n>> STONE: {help}\n>>'.format(help=arg2help['stone'])
 			print '>> STONE: '+arg2help['stone']
 			#print '          [options]: '+functions_str
-			print '          '+functions_str
+			if functions_str:
+				readline.set_completer(tabber.listCompleter)
+				print '          '+functions_str
 			stone = raw_input('>> ').strip()
 			if stone.isdigit() and 0<=int(stone)-1<len(functions):
 				args.stone=functions[int(stone)-1]
-			elif not stone in functions:
+			elif functions_str and not stone in functions:
 				print "!! function not in file"
 			else:
 				args.stone=stone

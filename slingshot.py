@@ -15,8 +15,9 @@ def rconvert(robj):
 	import rpy2
 	#if type(robj) == rpy2.robjects.vectors.ListVector:
 	try:
-		return { key : robj.rx2(key)[0] for key in robj.namess }
+		return { key : robj.rx2(key)[0] for key in robj.names }
 	except AttributeError:
+		print "!! forcing conversion for:",robj
 		from rpy2.robjects import pandas2ri
 		pandas2ri.activate()
 		return pandas2ri.ri2py(robj)
@@ -112,6 +113,7 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 		if result is not None:
 			#results+=[(path,result)]
 			results[path]=result
+			#print ">> RESULT FOR PATH '%s': %s" % (path,result)
 		#################################################
 	#"""
 
