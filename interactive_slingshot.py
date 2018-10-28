@@ -31,14 +31,10 @@ def interactive(parser, SLING_EXT=['py','R']):
 		if path_slings and os.path.exists(path_slings) and os.path.isdir(path_slings):
 			slings=[fn for fn in os.listdir(path_slings) if fn.split('.')[-1] in SLING_EXT]
 			sling_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
-
 		while not args.sling:
 			readline.set_completer(tabber.pathCompleter)
 			print '\n>> SLING: '+arg2help['sling']
 			if path_slings and slings:
-				#print '   (numerical shortcuts): slings found in default directory [{dir}]:\n                          {slings}'.format(dir=path_slings, slings=sling_str)
-				#print '   (numerical shortcuts): {slings}\n                [found in {dir}]'.format(dir=path_slings, slings=sling_str)
-				#print '   (numerical shortcuts): {slings}\n   (found in {dir})'.format(dir=path_slings, slings=sling_str)
 				print '          [numerical shortcuts for slings found in {dir}]\n          {slings}'.format(dir=path_slings, slings=sling_str)
 			sling = raw_input('>> ').strip()
 			if sling.isdigit() and 0<=int(sling)-1<len(slings):
@@ -74,10 +70,22 @@ def interactive(parser, SLING_EXT=['py','R']):
 
 		# PATH
 		print HR
+		path_pathlists = CONFIG.get('PATH_PATHLISTS','')
+		opener='>> PATH: '
+		opener_space=' '*len(opener)
+		if path_pathlists and os.path.exists(path_pathlists) and os.path.isdir(path_pathlists):
+			pathlists=[fn for fn in os.listdir(path_pathlists) if not fn.startswith('.')]
+			joiner='\n'+opener_space
+			pathlists_str=''.join(['\n%s(%s) %s' % (opener_space,si+1, sl) for si,sl in enumerate(pathlists)])
 		while not args.path:
 			readline.set_completer(tabber.pathCompleter)
-			path = raw_input('\n>> PATH: '+arg2help['path']+'\n>> ').strip()
-			if not os.path.exists(path):
+			print opener+arg2help['stone']
+			if path_slings and slings:
+				print opener_space + '[numerical shortcuts for pathlists found in {dir}]{pathlists}'.format(dir=path_slings, pathlists=pathlists_str)
+			path = raw_input('>> ').strip()
+			if path.isdigit() and 0<=int(path)-1<len(pathlists):
+				args.path=os.path.join(path_pathlists,pathlists[int(path)-1])
+			elif not os.path.exists(path):
 				print "!! filename or directory does not exist"
 			elif os.path.isdir(path):
 				args.ext = raw_input('\n>> EXT: '+arg2help['ext']+'\n>> ').strip()

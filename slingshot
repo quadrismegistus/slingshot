@@ -102,7 +102,7 @@ if __name__ == '__main__':
 	# is module a command?
 	#import distutils.spawn
 	#if distutils.spawn.find_executable("module"):
-	command = 'module load py-mpi4py; '+command
+	#command = 'module load py-mpi4py; '+command
 
 	print '>> EXECUTING:',command
 	with open(cmd_fnfn,'w') as f: f.write(command)
