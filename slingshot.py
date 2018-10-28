@@ -11,13 +11,43 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 			if fn.endswith(ext):
 				yield os.path.join(root,fn)
 
+def rconvert(robj):
+	import rpy2
+	#if type(robj) == rpy2.robjects.vectors.ListVector:
+	try:
+		return { key : robj.rx2(key)[0] for key in robj.namess }
+	except AttributeError:
+		from rpy2.robjects import pandas2ri
+		pandas2ri.activate()
+		return pandas2ri.ri2py(robj)
+
+def load_stone_in_sling(path_sling,stone_name):
+	if not os.path.exists(path_sling):
+		print "!!",path,"does not exist"
+		return
+	if path_sling.endswith('.py'):
+		sling = imp.load_source('sling', path_sling)
+		stone = getattr(sling,stone_name)
+		return stone
+
+	if path_sling.endswith('.R'):
+		from rpy2.robjects import r as R
+		#from rpy2.robjects import pandas2ri
+		#pandas2ri.activate()
+		# load all source
+		with open(path_sling) as f:
+			code=f.read()
+			R(code)
+			#stone = lambda x: pandas2ri.ri2py(R[stone_name](x))
+			stone = lambda x: rconvert(R[stone_name](x))
+			return stone
+
 def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True):
 	if not sling or not stone:
 		print '!! sling or stone not specified'
 		return
 
-	sling = imp.load_source('sling', sling)
-	stone = getattr(sling,stone)
+	stone=load_stone_in_sling(sling,stone)
 
 	if not paths:
 		if path_source:
