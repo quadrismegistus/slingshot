@@ -6,7 +6,6 @@ LINE_LIM = 100
 
 ## IMPORTS
 import prosodic as p,codecs,os
-from backports import csv
 p.config['en_TTS_ENGINE']='none'
 import bs4
 
