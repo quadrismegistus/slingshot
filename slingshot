@@ -20,7 +20,7 @@ if __name__ == '__main__':
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
-	parser.add_argument('-limit',help='How many paths to process')
+	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
 
 	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
 	parser.add_argument('-cache',help='Cache partial results',action='store_true')
@@ -30,6 +30,7 @@ if __name__ == '__main__':
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
 	parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=4)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
+	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
 	args = parser.parse_args()
 
 	# If no arguments... go into interactive mode!
@@ -98,11 +99,16 @@ if __name__ == '__main__':
 
 		# v2
 		#command = sbatch+' --nodes 2 --ntasks-per-node 2 --wrap="{cmd}"'.format(cmd=cmd)
-
-	# is module a command?
-	#import distutils.spawn
-	#if distutils.spawn.find_executable("module"):
-	#command = 'module load py-mpi4py; '+command
+	else:
+		# if not SBATCH
+		if not args.nosave and not args.quiet:
+			command = command + ' | tee /dev/tty > {out}'.format(out=out_fnfn)
+		elif not args.nosave and args.quiet:
+			command = command + ' > {out}'.format(out=out_fnfn)
+		elif args.nosave and not args.quiet:
+			pass
+		elif args.nosave and args.quiet:
+			command = command + ' > {out}'.format(out='/dev/null')
 
 	print '>> EXECUTING:',command
 	with open(cmd_fnfn,'w') as f: f.write(command)

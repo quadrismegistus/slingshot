@@ -79,7 +79,8 @@ def interactive(parser, SLING_EXT=['py','R']):
 			pathlists_str=''.join(['\n%s(%s) %s' % (opener_space,si+1, sl) for si,sl in enumerate(pathlists)])
 		while not args.path:
 			readline.set_completer(tabber.pathCompleter)
-			print opener+arg2help['stone']
+			#print opener+arg2help['stone']
+			print opener+'Enter a path either to a pathlist text file, or to a directory of texts'
 			if path_slings and slings:
 				print opener_space + '[numerical shortcuts for pathlists found in {dir}]{pathlists}'.format(dir=path_slings, pathlists=pathlists_str)
 			path = raw_input('>> ').strip()
@@ -93,9 +94,40 @@ def interactive(parser, SLING_EXT=['py','R']):
 			else:
 				args.path=path
 
+		print HR
+		print 'OPTIONAL SECTION'
+		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
+		default_savedir='/'.join(['slingshot_results',module,args.stone,now()])
+
+		args.sbatch = raw_input('\n>> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]\n>> (Y/N) ').strip().lower()=='y'
+		if args.sbatch:
+			args.hours = raw_input('\n>> HOURS: '+arg2help['hours']+' [1]\n>> ').strip()
+			args.parallel = raw_input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
+		else:
+			args.debug = raw_input('\n>> DEBUG: %s? [N]\n>> (Y/N) ' % arg2help['debug']).strip().lower()=='y'
+
+		args.nosave = raw_input('\n>> SAVE: Save results? [Y]\n>> (Y/N) ').strip().lower()=='n'
+		if not args.nosave:
+			args.savedir = raw_input('\n>> SAVEDIR: Directory to store results in [%s]' % default_savedir  + '\n>> ').strip()
+			args.cache = raw_input('\n>> CACHE: Cache partial results? [N]\n>> (Y/N) ').strip().lower()=='y'
+
+		args.quiet = raw_input('\n>> QUIET: %s? [N]\n>> (Y/N) ' % arg2help['debug']).strip().lower()=='y'
+		args.limit = raw_input('\n>> LIMIT: '+arg2help['limit']+' [None]\n>> ').strip()
+
+		print
 
 	except (KeyboardInterrupt,EOFError) as e:
 		print '\n>> goodbye'
 		exit()
 
 	return args
+
+
+def now(now=None,seconds=False):
+	import datetime as dt
+	if not now:
+		now=dt.datetime.now()
+	elif type(now) in [int,float,str]:
+		now=dt.datetime.fromtimestamp(now)
+
+	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
