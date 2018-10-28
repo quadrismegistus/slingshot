@@ -137,7 +137,7 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 			if writer: writer.write(path_result)
 		#################################################
 	#"""
-	if writer=writer.close()
+	if writer: writer.close()
 
 	# This method we slingshot the stone at the list of paths and ask it to store the results
 	#results=stone(paths)
