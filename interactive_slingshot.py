@@ -106,7 +106,9 @@ def interactive(parser, SLING_EXT=['py','R']):
 
 		args.sbatch = raw_input('\n>> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]\n>> (Y/N) ').strip().lower()=='y'
 		if args.sbatch:
-			args.hours = raw_input('\n>> HOURS: '+arg2help['hours']+' [1]\n>> ').strip()
+			hours = raw_input('\n>> HOURS: '+arg2help['hours']+' [1]\n>> ').strip()
+			hours = ''.join([x for x in hours if x.isdigit()])
+			args.hours = None if not hours else hours
 			args.parallel = raw_input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
 			args.mem = raw_input('\n>> MEMORY: '+arg2help['mem']+' [2G]\n>> ').strip()
 		else:

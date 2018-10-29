@@ -60,14 +60,23 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 
 	stone=load_stone_in_sling(sling,stone)
 
+	def get_paths(_fnfn):
+		with open(_fnfn) as pf:
+			paths=[line.strip() for line in pf]
+			paths=[x for x in paths if x]
+			return paths
+
 	if not paths:
 		if path_source:
 			if os.path.isdir(path_source):
 				paths=list(get_all_paths_from_folder(path_source,path_ext)) if path_source else None
 			elif os.path.exists(path_source):
-				with open(path_source) as pf:
-					paths=[line.strip() for line in pf]
-					paths=[x for x in paths if x]
+				paths=get_paths(path_source)
+			else:
+				path_pathlists = CONFIG.get('PATH_PATHLISTS','')
+				pathlist_path_source = os.path.join(path_pathlists,path_source)
+				if os.path.exists(pathlist_path_source):
+					paths=get_paths(pathlist_path_source)
 	if not paths:
 		print '!! no paths given or found at %s' % path_source if path_source else ''
 		return
