@@ -184,6 +184,9 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 
 			# Stream-save TSV
 			if save_txt:
+				import time
+				now=time.time()
+
 				# First find KEYS
 				KEYS=set()
 				if txt_maxcols: Count=Counter()
@@ -195,17 +198,22 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 							KEYS=set(result.keys())
 				if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
 
+				then,now=now,time.time()
+				print '>> save_txt: found keys in %ss' % int(now-then)
+
 				if KEYS:
 					# Then loop again to write
-					header=['_path']+sorted(list(KEYS))
+					header=['_path']+sorted([unicode(x) for x in KEYS])
 					results_fnfn_txt=os.path.join(results_dir,'results.txt')
 					with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:
+						results_f_txt.write('\t'.join(header) + '\n')
 						for path,result in iterload(results_fnfn):
 							result['_path']=path
 							orow=[unicode(result.get(h,'')) for h in header]
-							oline='\t'.join(orow)
-							results_f_txt.write(oline + '\n')
+							results_f_txt.write('\t'.join(orow) + '\n')
 						print '>> saved:',results_fnfn_txt
+						then,now=now,time.time()
+						print '>> save_txt: saved in %ss' % int(now-then)
 
 
 class JSONStreamWriter(object):
@@ -225,7 +233,7 @@ class JSONStreamWriter(object):
 def iterload(filename,encoding='utf-8'):
 	with codecs.open(filename,'r',encoding=encoding) as f:
 		for i,line in enumerate(f):
-			if not i%100: print filename,i,'...'
+			if not i%100: print '>> iterload:',filename,i,'...'
 			line = line[:-2] if line[-2:]==',\n' else line
 			try:
 				x=json.loads(line)
