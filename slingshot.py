@@ -49,7 +49,7 @@ def load_stone_in_sling(path_sling,stone_name):
 			stone = lambda x: rconvert(R[stone_name](x))
 			return stone
 
-def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=False,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True):
+def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True):
 	if not sling or not stone:
 		print '!! sling or stone not specified'
 		return
@@ -167,19 +167,19 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 			# Save JSON
 			results_fn='results.json'
 			results_fnfn=os.path.join(results_dir,results_fn)
-			if not stream_results:
-				with codecs.open(results_fnfn,'wb') as results_f:
-					json.dump(RESULTS,results_f)
-					print '>> saved:',results_fnfn
-			else:
+			if cache_results and cache_path and stream_results:
 				# Stream JSON write
 				#Writer=JSONStreamWriter(results_fnfn)
-				with codecs.open(results_fnfn,'wb') as results_f:
+				with codecs.open(results_fnfn,'w',encoding='utf-8') as results_f:
 					results_f.write('[\n')
 					for line in stream_cached_jsons():
 						if len(line)<3: continue
 						results_f.write(line)
 					results_f.write(']\n')
+			else:
+				with codecs.open(results_fnfn,'wb') as results_f:
+					json.dump(RESULTS,results_f)
+					print '>> saved:',results_fnfn
 
 			# Stream-save TSV
 			if save_txt:
