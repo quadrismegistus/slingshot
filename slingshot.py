@@ -31,8 +31,11 @@ def rconvert(robj):
 
 def load_stone_in_sling(path_sling,stone_name):
 	if not os.path.exists(path_sling):
-		print "!!",path,"does not exist"
-		return
+		in_PATH_STRINGS=os.path.join(CONFIG['PATH_SLINGS'],path_sling)
+		if not os.path.exists(in_PATH_STRINGS):
+			print "!!",path,"does not exist"
+			return
+		path_sling=in_PATH_STRINGS
 	if path_sling.endswith('.py'):
 		sling = imp.load_source('sling', path_sling)
 		stone = getattr(sling,stone_name)
@@ -173,10 +176,17 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 				#Writer=JSONStreamWriter(results_fnfn)
 				with codecs.open(results_fnfn,'w',encoding='utf-8') as results_f:
 					results_f.write('[\n')
-					for line in stream_cached_jsons():
-						if len(line)<3: continue
-						results_f.write(line)
-					results_f.write(']\n')
+					for fn_c in sorted(os.listdir(cache_path)):
+						if not fn_c.endswith('.json'): continue
+						fnfn_c=os.path.join(cache_path,fn_c)
+						with codecs.open(fnfn_c,encoding='utf-8') as f_c:
+							for line in f_c:
+								if len(line)<3: continue
+								results_f.write(line)
+							results_f.seek(-1,1)
+							results_f.write(',\n')
+					results_f.seek(-2,1)
+					results_f.write('\n]\n')
 			else:
 				with codecs.open(results_fnfn,'wb') as results_f:
 					json.dump(RESULTS,results_f)
@@ -227,7 +237,8 @@ class JSONStreamWriter(object):
 		self.file.write(oline+',\n')
 
 	def close(self):
-		self.file.write(']\n')
+		self.file.seek(-2, 1)
+		self.file.write('\n]\n')
 		self.file.close()
 
 def iterload(filename,encoding='utf-8'):
