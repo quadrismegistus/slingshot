@@ -53,7 +53,7 @@ def load_stone_in_sling(path_sling,stone_name):
 			stone = lambda x: rconvert(R[stone_name](x))
 			return stone
 
-def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=25000):
+def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
 	if not sling or not stone:
 		print '!! sling or stone not specified'
 		return

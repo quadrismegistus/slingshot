@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
 	parser.add_argument('-nocache',help='Do not cache partial results',action='store_true')
 	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_stone_timestamp]')
-	parser.add_argument('-mfw',help='Limit # of columns in results.txt to N most frequent in data',default=25000)
+	parser.add_argument('-mfw',help='Limit # of columns in results.txt to N most frequent in data',default=10000)
 
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
