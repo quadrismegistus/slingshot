@@ -220,7 +220,6 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 						else:
 							KEYS=set(result.keys())
 				if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
-				print len(KEYS),KEYS
 
 				then,now=now,time.time()
 				print '>> save_txt: found keys in %ss' % int(now-then)
@@ -228,7 +227,6 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 				if KEYS:
 					# Then loop again to write
 					header=['_path']+sorted([unicode(x) for x in KEYS])
-					print len(header),header
 					results_fnfn_txt=os.path.join(results_dir,'results.txt')
 					with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:
 						results_f_txt.write('\t'.join(header) + '\n')
