@@ -102,14 +102,17 @@ def interactive(parser, SLING_EXT=['py','R']):
 		print HR
 		print 'OPTIONAL SECTION'
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
-		default_savedir='/'.join(['results_slingshot',module,args.stone,now()])
+		#default_savedir='/'.join(['results_slingshot',module,args.stone,now()])
+		default_savedir='/'.join(['results_slingshot',module,args.stone])
 
 		args.sbatch = raw_input('\n>> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]\n>> (Y/N) ').strip().lower()=='y'
 		if args.sbatch:
+			args.parallel = raw_input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
+
 			hours = raw_input('\n>> HOURS: '+arg2help['hours']+' [1]\n>> ').strip()
 			hours = ''.join([x for x in hours if x.isdigit()])
 			args.hours = parser.get_default('hours') if not hours else hours
-			args.parallel = raw_input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
+
 			mem = raw_input('\n>> MEMORY: '+arg2help['mem']+' [2G]\n>> ').strip()
 			args.mem = parser.get_default('mem') if not mem else mem
 		else:
