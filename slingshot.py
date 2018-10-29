@@ -253,7 +253,7 @@ class JSONStreamWriter(object):
 def iterload(filename,encoding='utf-8'):
 	with codecs.open(filename,'r',encoding=encoding) as f:
 		for i,line in enumerate(f):
-			if not i%100: print '>> iterload:',filename,i,'...'
+			#if not i%100: print '>> iterload:',filename,i,'...'
 			line = line[:-2] if line[-2:]==',\n' else line
 			try:
 				x=json.loads(line)
