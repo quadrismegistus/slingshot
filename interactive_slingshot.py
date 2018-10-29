@@ -110,7 +110,8 @@ def interactive(parser, SLING_EXT=['py','R']):
 			hours = ''.join([x for x in hours if x.isdigit()])
 			args.hours = parser.get_default('hours') if not hours else hours
 			args.parallel = raw_input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
-			args.mem = raw_input('\n>> MEMORY: '+arg2help['mem']+' [2G]\n>> ').strip()
+			mem = raw_input('\n>> MEMORY: '+arg2help['mem']+' [2G]\n>> ').strip()
+			args.mem = parser.get_default('mem') if not mem else mem
 		else:
 			args.debug = raw_input('\n>> DEBUG: %s? [N]\n>> (Y/N) ' % arg2help['debug']).strip().lower()=='y'
 
