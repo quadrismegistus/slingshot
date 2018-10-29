@@ -25,6 +25,7 @@ if __name__ == '__main__':
 	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
 	parser.add_argument('-nocache',help='Do not cache partial results',action='store_true')
 	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_stone_timestamp]')
+	parser.add_argument('-mfw',help='Limit # of columns in results.txt to N most frequent in data',default=25000)
 
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
@@ -72,7 +73,7 @@ if __name__ == '__main__':
 	cmd_fnfn=os.path.join(savedir,'cmd.txt')
 
 	# Execute!
-	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', stone='{stone}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave})" """.format(
+	command = """python -c "import slingshot; slingshot.slingshot(sling='{sling}', stone='{stone}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
@@ -80,7 +81,8 @@ if __name__ == '__main__':
 		limit=limit,
 		savedir=savedir,
 		cache=not args.nocache,
-		tosave=args.nosave is False
+		tosave=args.nosave is False,
+		mfw=args.mfw
 	)
 
 

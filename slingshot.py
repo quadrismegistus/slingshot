@@ -194,6 +194,10 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 								results_f.write(line)
 							results_f.seek(-1,1)
 							results_f.write(',\n')
+
+						# delete cache file
+						#os.unlink(fnfn_c)
+
 					results_f.seek(-2,1)
 					results_f.write('\n]\n')
 			else:
