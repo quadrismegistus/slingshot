@@ -79,7 +79,7 @@ if __name__ == '__main__':
 		limit=limit,
 		savedir=savedir,
 		cache=not args.nocache,
-		tosave=tosave is False
+		tosave=args.nosave is False
 	)
 
 
