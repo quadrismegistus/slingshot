@@ -1,8 +1,8 @@
-STONES = ['count_words']
+STONES = ['count_words','get_text_length']
 import codecs,re
 
 
-def count_words_simple(path):
+def get_text_length(path):
 	with codecs.open(path,encoding='utf-8') as f:
 		count=len(f.read().split())
 	return {'count':count}
