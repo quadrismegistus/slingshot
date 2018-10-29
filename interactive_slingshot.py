@@ -121,7 +121,7 @@ def interactive(parser, SLING_EXT=['py','R']):
 		args.nosave = raw_input('\n>> SAVE: Save results? [Y]\n>> (Y/N) ').strip().lower()=='n'
 		if not args.nosave:
 			args.savedir = raw_input('\n>> SAVEDIR: Directory to store results in [%s]' % default_savedir  + '\n>> ').strip()
-			args.cache = raw_input('\n>> CACHE: Cache partial results? [N]\n>> (Y/N) ').strip().lower()=='y'
+			args.cache = raw_input('\n>> CACHE: Cache partial results? [Y]\n>> (Y/N) ').strip().lower()=='y'
 			mfw = raw_input('\n>> MFW: %s' % arg2help['mfw'] + '\n>> ').strip()
 			args.mfw=mfw if mfw else parser.get_default('mfw')
 
