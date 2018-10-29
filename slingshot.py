@@ -9,6 +9,7 @@ import unicodecsv as csv
 from datetime import datetime as dt
 from mpi4py import MPI
 import slingshot_config
+from collections import defaultdict,Counter
 CONFIG={} if not slingshot_config.CONFIG else slingshot_config.CONFIG
 
 def get_all_paths_from_folder(rootdir,ext='.txt'):
@@ -49,7 +50,7 @@ def load_stone_in_sling(path_sling,stone_name):
 			stone = lambda x: rconvert(R[stone_name](x))
 			return stone
 
-def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True):
+def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=25000):
 	if not sling or not stone:
 		print '!! sling or stone not specified'
 		return
@@ -185,9 +186,14 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 			if save_txt:
 				# First find KEYS
 				KEYS=set()
+				if txt_maxcols: Count=Counter()
 				for path,result in iterload(results_fnfn):
 					if hasattr(result,'keys'):
-						KEYS|=set(result.keys())
+						if txt_maxcols:
+							Count.update(result.keys())
+						else:
+							KEYS=set(result.keys())
+				if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
 
 				if KEYS:
 					# Then loop again to write
