@@ -220,6 +220,7 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 						else:
 							KEYS=set(result.keys())
 				if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
+				print len(KEYS)
 
 				then,now=now,time.time()
 				print '>> save_txt: found keys in %ss' % int(now-then)
