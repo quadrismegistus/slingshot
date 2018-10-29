@@ -148,10 +148,14 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 
 
 	def stream_cached_jsons(cache_path=cache_path):
-		for fn in os.listdir(cache_path):
+		for fn in sorted(os.listdir(cache_path)):
 			if not fn.endswith('.json'): continue
-			if obj in iterload(os.path.join(cache_path,fn)):
-				yield obj
+			fnfn=os.path.join(cache_path,fn)
+			#for obj in iterload(fnfn):
+			#	yield obj
+			with codecs.open(fnfn,encoding='utf-8') as f:
+				for line in f:
+					yield line
 
 	if rank == 0:
 		t3 = dt.now()
@@ -169,10 +173,13 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 					print '>> saved:',results_fnfn
 			else:
 				# Stream JSON write
-				Writer=JSONAutoArray.ArrayWriter(results_fnfn)
-				for obj in stream_cached_jsons():
-					Writer.write(obj)
-				Writer.close()
+				#Writer=JSONStreamWriter(results_fnfn)
+				with codecs.open(results_fnfn,'wb') as results_f:
+					results_f.write('[\n')
+					for line in stream_cached_jsons():
+						if len(line)<3: continue
+						results_f.write(line)
+					results_f.write(']\n')
 
 			# Stream-save TSV
 			if save_txt:
@@ -182,34 +189,40 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 					if hasattr(result,'keys'):
 						KEYS|=set(result.keys())
 
-				# Then loop again to write
-				header=['_path']+sorted(list(KEYS))
-				results_fnfn_txt=os.path.join(results_dir,'results.txt')
-				with open(results_fnfn_txt,'wb') as results_f_txt:
-					writer = csv.DictWriter(results_f_txt,delimiter='\t',fieldnames=header)
-					writer.writeheader()
-					for obj in
-							pathd['_path']=path
-							writer.writerow(pathd)
-							LD+=[pathd]
-					print '>> saved:',results_fnfn_txt
-
-		return LD
+				if KEYS:
+					# Then loop again to write
+					header=['_path']+sorted(list(KEYS))
+					results_fnfn_txt=os.path.join(results_dir,'results.txt')
+					with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:
+						for path,result in iterload(results_fnfn):
+							result['_path']=path
+							orow=[unicode(result.get(h,'')) for h in header]
+							oline='\t'.join(orow)
+							results_f_txt.write(oline + '\n')
+						print '>> saved:',results_fnfn_txt
 
 
 class JSONStreamWriter(object):
 	def __init__(self,filename,encoding='utf-8'):
 		self.file=codecs.open(filename,'w',encoding=encoding)
+		self.file.write('[\n')
 
 	def write(self,obj):
 		oline=json.dumps(obj)
 		oline=oline.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t')
-		self.file.write(oline+'\n')
+		self.file.write(oline+',\n')
 
 	def close(self):
+		self.file.write(']\n')
 		self.file.close()
 
-def iterload(filename):
+def iterload(filename,encoding='utf-8'):
 	with codecs.open(filename,'r',encoding=encoding) as f:
-		for line in f:
-			yield json.loads(line)
+		for i,line in enumerate(f):
+			if not i%100: print filename,i,'...'
+			line = line[:-2] if line[-2:]==',\n' else line
+			try:
+				x=json.loads(line)
+				yield x
+			except ValueError as e:
+				pass
