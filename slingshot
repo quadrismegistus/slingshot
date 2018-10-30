@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
 	# If no arguments... go into interactive mode!
 	if len(sys.argv)<2:
-		from interactive_slingshot import interactive
+		from mpi_slingshot.interactive import interactive
 		args = interactive(parser)
 
 	# Load slingshot
