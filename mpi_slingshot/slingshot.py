@@ -257,14 +257,14 @@ def iterload(filename,encoding='utf-8'):
 			#if not i%100: print '>> iterload:',filename,i,'...'
 			#print i,line
 			line = line[:-2] if line[-2:]==',\n' else line
-			print "??",[line[:10],line[-10:]],line.count('_txt_')
+			#print "??",[line[:10],line[-10:]],line.count('_txt_')
 			try:
 				x=json.loads(line)
 				yield x
 				#print x
 			except ValueError as e:
-				print "!!",e
-				print "!!",[line[:10],line[-10:]],line.count('_txt_')
+				#print "!!",e
+				#print "!!",[line[:10],line[-10:]],line.count('_txt_')
 				#print line
 				print
 				print

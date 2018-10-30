@@ -12,7 +12,7 @@ with open("requirements.txt", "r") as fh:
 
 setup(
     name='mpi-slingshot',
-    version='0.1.3',
+    version='0.1.4',
     description=('SLINGSHOT: Python wrapper for MPI to "slingshot" a small Python or R function against the Goliath of Big Data'),
     long_description=long_description,
     long_description_content_type="text/markdown",
