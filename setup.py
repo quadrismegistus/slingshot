@@ -4,7 +4,7 @@ import os
 import sys
 _here = os.path.abspath(os.path.dirname(__file__))
 
-with open("README.md", "r") as fh:
+with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 with open("requirements.txt", "r") as fh:
@@ -12,7 +12,7 @@ with open("requirements.txt", "r") as fh:
 
 setup(
     name='mpi-slingshot',
-    version='0.1.1-rc-4',
+    version='0.1.2',
     description=('SLINGSHOT: Python wrapper for MPI to "slingshot" a small Python or R function against the Goliath of Big Data'),
     long_description=long_description,
     long_description_content_type="text/markdown",
