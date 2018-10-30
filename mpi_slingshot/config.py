@@ -13,3 +13,9 @@ except ImportError:
 	CONFIG['PATH_PATHLISTS'] = os.path.join(os.path.dirname(__file__),'..','pathlists')
 	CONFIG['SLING_EXT'] = ['py','R']
 	##
+
+ENV_PREFIX='SLINGSHOT_'
+for k,v in os.environ.items():
+	if k.startswith(ENV_PREFIX):
+		key=k[len(ENV_PREFIX):]
+		CONFIG[key]=v
