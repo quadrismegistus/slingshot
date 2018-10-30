@@ -78,6 +78,7 @@ def interactive(parser, SLING_EXT=['py','R']):
 		path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 		opener='>> PATH: '
 		opener_space=' '*len(opener)
+		pathlists_str=''
 		if path_pathlists and os.path.exists(path_pathlists) and os.path.isdir(path_pathlists):
 			pathlists=[fn for fn in os.listdir(path_pathlists) if not fn.startswith('.')]
 			joiner='\n'+opener_space

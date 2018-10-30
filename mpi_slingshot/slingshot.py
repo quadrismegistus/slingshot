@@ -188,14 +188,14 @@ def slingshot(sling=None,stone=None,paths=None,limit=None,path_source=None,path_
 						with codecs.open(fnfn_c,encoding='utf-8') as f_c:
 							for line in f_c:
 								if len(line)<3: continue
-								results_f.write(line)
-							results_f.seek(-1,1)
+								results_f.write(line.strip())
+							#results_f.seek(-2,1)
 							results_f.write(',\n')
 
 						# delete cache file
 						os.unlink(fnfn_c)
-					results_f.seek(-2,1)
-					results_f.write('\n]\n')
+					results_f.seek(-4,1)
+					results_f.write(']\n\n')
 			else:
 				with codecs.open(results_fnfn,'wb') as results_f:
 					json.dump(RESULTS,results_f)
@@ -254,6 +254,7 @@ def iterload(filename,encoding='utf-8'):
 	with codecs.open(filename,'r',encoding=encoding) as f:
 		for i,line in enumerate(f):
 			#if not i%100: print '>> iterload:',filename,i,'...'
+			print i,line
 			line = line[:-2] if line[-2:]==',\n' else line
 			try:
 				x=json.loads(line)
