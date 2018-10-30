@@ -1,16 +1,13 @@
-import os,sys,codecs,json,numpy as np,random,imp
-
+import os,sys,codecs,numpy as np,random,imp
 try:
 	import ujson as json
 except ImportError:
 	import json
-
 import unicodecsv as csv
 from datetime import datetime as dt
 from mpi4py import MPI
-import slingshot_config
 from collections import defaultdict,Counter
-CONFIG={} if not slingshot_config.CONFIG else slingshot_config.CONFIG
+from .config import CONFIG
 
 def get_all_paths_from_folder(rootdir,ext='.txt'):
 	for root, subdirs, files in os.walk(rootdir):

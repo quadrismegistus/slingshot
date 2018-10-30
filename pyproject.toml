@@ -1,0 +1,11 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "mpi_slingshot"
+author = "Ryan Heuser"
+author-email = "heuser@stanford.edu"
+home-page = "https://github.com/quadrismegistus/mpi-slingshot"
+classifiers = ["License :: OSI Approved :: MIT License"]
+
