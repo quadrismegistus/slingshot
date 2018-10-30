@@ -1,5 +1,4 @@
 mpi4py==3.0.0
 numpy==1.15.3
-slope==0.0.1.0
 ujson==1.35
 unicodecsv==0.14.1
