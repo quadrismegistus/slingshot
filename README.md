@@ -51,13 +51,13 @@ You should see a prompt:
 	          (1) booknlp.py  (2) count_words.R  (3) count_words.py  (4) prosodic_parser.py
 	>>
 
-You’re being prompted for the “sling,” the file of python or R code. Type a number to select from some built-in slings, or type the path to a file of your own code. After selecting the “sling,” you’ll be asked for the “stone”:
+You’re being prompted for the “**sling**,” the file of python or R code. Type a number to select from some built-in slings, or type the path to a file of your own code. After selecting the “sling,” you’ll be asked for the “stone”:
 
 	>> STONE: The name of the function in the code that takes a string filepath
 	          (1) parse_chadwyck  (2) postprocess_chadwyck
 	>>
 
-Type either the appropriate # (if available [rn only for Python]), or the name of the function that is the “stone.” The stone is the function inside the code, or sling, that is to be slingshot onto the texts. Its only required argument is an absolute path to a text file: this function will take that path, load the text, and return some data, any data. The data will then be collected together at the end.
+Type either the appropriate # (if available [rn only for Python]), or the name of the function that is the “**stone**.” The stone is the function inside the code, or sling, that is to be slingshot onto the texts. Its only required argument is an absolute path to a text file: this function will take that path, load the text, and return some data, any data. The data will then be collected together at the end.
 
 But which texts should we slingshot this function at? We now need to select a list of filepaths.
 
@@ -71,12 +71,11 @@ But which texts should we slingshot this function at? We now need to select a li
 	         (6) paths_sherlock.dime-westerns.txt
 	>>
 
-Now we provide a list of files to slingshot at. We can do this either by:
-Typing a number for a pre-defined pathlist files (those found in the default pathlist folder).
+Now we provide a list of files to slingshot at (a **path** or **pathlist**). We can do this either by:
 
-Typing out the path to a file (hit tab for autocomplete, double-tap tab to list files). This file must have one absolute path per line, nothing more.
-
-Typing out the path to a directory (hit tab for autocomplete), and then supplying a file extension (e.g. “txt”, “xml”): in this case, the directory will be recursively searched, and any file matching that extension will be included in the list of filepaths.
+* Typing a number for a pre-defined pathlist (those found in the default pathlist folder).
+* Typing out the path to a file (hit tab for autocomplete, double-tap tab to list files). This file must have one absolute path per line, nothing more.
+* Typing out the path to a directory (hit tab for autocomplete), and then supplying a file extension (e.g. “txt”, “xml”): in this case, the directory will be recursively searched, and any file matching that extension will be included in the list of filepaths.
 
 That’s all we need! The other options are optional:
 

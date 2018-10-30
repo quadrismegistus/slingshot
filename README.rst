@@ -64,7 +64,7 @@ You should see a prompt:
    >>
 
 
-You’re being prompted for the “sling,” the file of python or R code. Type a number to select from some built-in slings, or type the path to a file of your own code. After selecting the “sling,” you’ll be asked for the “stone”:
+You’re being prompted for the “\ **sling**\ ,” the file of python or R code. Type a number to select from some built-in slings, or type the path to a file of your own code. After selecting the “sling,” you’ll be asked for the “stone”:
 
 .. code-block::
 
@@ -73,7 +73,7 @@ You’re being prompted for the “sling,” the file of python or R code. Type 
    >>
 
 
-Type either the appropriate # (if available [rn only for Python]), or the name of the function that is the “stone.” The stone is the function inside the code, or sling, that is to be slingshot onto the texts. Its only required argument is an absolute path to a text file: this function will take that path, load the text, and return some data, any data. The data will then be collected together at the end.
+Type either the appropriate # (if available [rn only for Python]), or the name of the function that is the “\ **stone**.” The stone is the function inside the code, or sling, that is to be slingshot onto the texts. Its only required argument is an absolute path to a text file: this function will take that path, load the text, and return some data, any data. The data will then be collected together at the end.
 
 But which texts should we slingshot this function at? We now need to select a list of filepaths.
 
@@ -90,12 +90,12 @@ But which texts should we slingshot this function at? We now need to select a li
    >>
 
 
-Now we provide a list of files to slingshot at. We can do this either by:
-Typing a number for a pre-defined pathlist files (those found in the default pathlist folder).
+Now we provide a list of files to slingshot at (a **path** or **pathlist**\ ). We can do this either by:
 
-Typing out the path to a file (hit tab for autocomplete, double-tap tab to list files). This file must have one absolute path per line, nothing more.
 
-Typing out the path to a directory (hit tab for autocomplete), and then supplying a file extension (e.g. “txt”, “xml”): in this case, the directory will be recursively searched, and any file matching that extension will be included in the list of filepaths.
+* Typing a number for a pre-defined pathlist (those found in the default pathlist folder).
+* Typing out the path to a file (hit tab for autocomplete, double-tap tab to list files). This file must have one absolute path per line, nothing more.
+* Typing out the path to a directory (hit tab for autocomplete), and then supplying a file extension (e.g. “txt”, “xml”): in this case, the directory will be recursively searched, and any file matching that extension will be included in the list of filepaths.
 
 That’s all we need! The other options are optional:
 
@@ -156,7 +156,7 @@ And results.txt, which has the same data but formatted as a TSV file. It reads:
 
 .. code-block::
 
-   _path    count
+   _path   count
    /...blah.../00022180.txt    310725
    /...blah.../00004615.txt    70321
    /...blah.../00021819.txt    88483
