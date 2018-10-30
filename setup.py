@@ -12,7 +12,7 @@ with open("requirements.txt", "r") as fh:
 
 setup(
     name='mpi-slingshot',
-    version='0.1.1',
+    version='0.1.1c',
     description=('SLINGSHOT: Python wrapper for MPI to "slingshot" a small Python or R function against the Goliath of Big Data'),
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -22,7 +22,7 @@ setup(
     license='MPL-2.0',
     packages=setuptools.find_packages(),
     install_requires=requirements,
-    scripts=['slingshot'],
+    scripts=['bin/slingshot'],
     include_package_data=True,
     classifiers=[
         #'Development Status :: 3 - Alpha',
