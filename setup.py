@@ -7,9 +7,12 @@ _here = os.path.abspath(os.path.dirname(__file__))
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+with open("requirements.txt", "r") as fh:
+    requirements = [x.strip() for x in fh.read().split('\n') if x.strip()]
+
 setup(
     name='mpi-slingshot',
-    version='0.1-rc-1',
+    version='0.1.1',
     description=('SLINGSHOT: Python wrapper for MPI to "slingshot" a small Python or R function against the Goliath of Big Data'),
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -18,11 +21,7 @@ setup(
     url='https://github.com/quadrismegistus/mpi-slingshot',
     license='MPL-2.0',
     packages=setuptools.find_packages(),
-    install_requires=[
-        #'click==6.7',
-        #'numpy==1.13.1',
-        #'pyyaml==3.12',
-    ],
+    install_requires=requirements,
     scripts=['slingshot'],
     include_package_data=True,
     classifiers=[

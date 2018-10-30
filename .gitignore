@@ -1,1 +1,6 @@
 *.pyc
+.pypirc
+MANIFEST.in
+build/
+dist/
+mpi_slingshot.egg-info/
