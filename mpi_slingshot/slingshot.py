@@ -12,7 +12,7 @@ PATH_KEY=CONFIG.get('PATH_KEY','_path')
 PATH_EXT=CONFIG.get('PATH_EXT','txt').replace('.','')
 
 
-def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,path_key=PATH_KEY,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
+def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,path_key=PATH_KEY,path_ext=None,path_prefix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
 	"""
 	Main function
 	"""
@@ -21,7 +21,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	stone=load_stone_in_sling(path_sling,stone_name)
 
 	# Load paths
-	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key) if not paths else paths
+	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix) if not paths else paths
 
 	# Break if these weren't returned
 	if not stone or not all_paths:
@@ -171,7 +171,7 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 
 
 
-def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,sep='\t'):
+def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,path_prefix='',sep='\t'):
 	paths=[]
 	#with codecs.open(_fnfn,encoding='utf-8') as pf:
 	with open(_fnfn) as pf:
@@ -179,10 +179,11 @@ def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,sep='\t'):
 		for dx in reader:
 			path=dx.get(path_key,'')
 			if not path: continue
+			if path_prefix: path=os.path.join(path_prefix,path)
 			path_from_fnfn = os.path.join(os.path.dirname(_fnfn),path)
 			path_from_fnfn_plus_ext = '.'.join(path_from_fnfn.split('.')+[path_ext])
 			path_exists=os.path.exists(path)
-			print [path,path_from_fnfn,path_from_fnfn_plus_ext]
+			#print [path,path_from_fnfn,path_from_fnfn_plus_ext]
 			if not path_exists:
 				if os.path.exists(path_from_fnfn):
 					path=os.path.abspath(path_from_fnfn)
@@ -200,23 +201,25 @@ def is_csv(_fnfn,sep='\t'):
 		first_line=pf.readline()
 		return sep in first_line
 
-def get_paths_from_pathlist(_fnfn,sep='\t',path_key=PATH_KEY):
+def get_paths_from_pathlist(_fnfn,sep='\t',path_key=PATH_KEY,path_prefix=''):
 		if is_csv(_fnfn,sep=sep):
-			return get_paths_from_csv(_fnfn,path_key=path_key,sep=sep)
+			return get_paths_from_csv(_fnfn,path_key=path_key,sep=sep,path_prefix=path_prefix)
 		else:
 			with open(_fnfn) as pf:
 				paths=[line.strip() for line in pf]
 				paths=[x for x in paths if x]
+				if path_prefix:
+					paths=[os.path.join(path_prefix,x) for x in paths]
 				return paths
 
 
 
-def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY):
+def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_prefix=''):
 	if path_source:
 		if os.path.isdir(path_source):
 			paths=list(get_all_paths_from_folder(path_source,path_ext)) if path_source else None
 		elif os.path.exists(path_source):
-			paths=get_paths_from_pathlist(path_source,path_key=path_key)
+			paths=get_paths_from_pathlist(path_source,path_key=path_key,path_prefix=path_prefix)
 		else:
 			path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 			pathlist_path_source = os.path.join(path_pathlists,path_source)

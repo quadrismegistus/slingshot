@@ -101,6 +101,7 @@ def interactive(parser, SLING_EXT=['py','R']):
 			elif is_csv(path):
 				args.path=path
 				args.pathkey=raw_input('\n>> COLUMN: '+arg2help['pathkey']+'\n>> ').strip()
+				args.pathprefix=raw_input('\n>> PREFIX: '+arg2help['pathkey']+'\n>> ').strip()
 			else:
 				args.path=path
 
