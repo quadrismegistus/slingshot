@@ -102,6 +102,7 @@ def interactive(parser, SLING_EXT=['py','R']):
 				args.path=path
 				args.pathkey=raw_input('\n>> COLUMN: '+arg2help['pathkey']+'\n>> ').strip()
 				args.pathprefix=raw_input('\n>> PREFIX: '+arg2help['pathkey']+'\n>> ').strip()
+				args.pathsuffix=raw_input('\n>> SUFFIX: '+arg2help['pathkey']+'\n>> ').strip()
 			else:
 				args.path=path
 

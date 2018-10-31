@@ -20,9 +20,10 @@ if __name__ == '__main__':
 	parser.add_argument('-stone',help='The name of the function in the code that takes a string filepath')
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-pathkey',help='If text file given is a TSV, which column is the path located under?',default='')
-	parser.add_argument('-pathprefix',help='If applicable, type a prefix for all paths on pathlist (e.g. /path/to/folder)?',default='')
+	parser.add_argument('-pathprefix',help='If applicable, type a prefix for all paths on pathlist (eg: /path/to/folder)',default='')
+	parser.add_argument('-pathsuffix',help='If applicable, type a suffix for all paths on pathlist (eg: .txt)',default='')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
-	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered',default='txt')
+	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
 
 	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
@@ -67,6 +68,7 @@ if __name__ == '__main__':
 		parser.print_help()
 		sys.exit(1)
 	if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
+	if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
 
 
 	# Other options
@@ -91,12 +93,13 @@ if __name__ == '__main__':
 	if args.mfw: Scmd+=' -mfw %s' % args.mfw
 
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
+	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
 		pathkey=args.pathkey,
 		path_prefix=args.pathprefix,
+		path_suffix=args.pathsuffix,
 		path_ext=path_ext,
 		limit=limit,
 		savedir=savedir,
@@ -133,9 +136,11 @@ if __name__ == '__main__':
 			command = command + ' > {out}'.format(out='/dev/null')
 
 
-	if args.sbatch: Scmd+=' -sbatch'
-	if args.hours: Scmd+=' -hours %s' % args.hours
-	if args.mem: Scmd+=' -mem %s' % args.mem
+	if args.sbatch:
+		Scmd+=' -sbatch'
+		if args.hours: Scmd+=' -hours %s' % args.hours
+		if args.mem: Scmd+=' -mem %s' % args.mem
+
 	if args.parallel: Scmd+=' -parallel %s' % args.parallel
 	if args.debug: Scmd+=' -debug'
 	if args.quiet: Scmd+=' -quiet'
