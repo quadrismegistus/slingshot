@@ -3,16 +3,16 @@ try:
 	import ujson as json
 except ImportError:
 	import json
-import unicodecsv as csv
 from datetime import datetime as dt
+import unicodecsv as csv
 from mpi4py import MPI
 from collections import defaultdict,Counter
 from .config import CONFIG
+KEY_PATH=CONFIG.get('KEY_PATH','_path')
 
 
 
-
-def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
+def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,key_path=KEY_PATH,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
 	"""
 	Main function
 	"""
@@ -21,10 +21,10 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	stone=load_stone_in_sling(path_sling,stone_name)
 
 	# Load paths
-	paths = load_paths(path_source,path_ext,limit,shuffle_paths) if not paths else paths
+	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths) if not paths else paths
 
 	# Break if these weren't returned
-	if not stone or not paths:
+	if not stone or not all_paths:
 		print '!!',[path_sling,stone_name,path_source,path_ext]
 		return
 
@@ -47,8 +47,8 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 		if cache_results and cache_path and not os.path.exists(cache_path): os.makedirs(cache_path)
 
 		# Farm out paths to other processes
-		segments = np.array_split(paths,size) if size>1 else [paths]
-		print '>> SLINGSHOT: %s paths divided into %s segments' % (len(paths), len(segments))
+		segments = np.array_split(all_paths,size) if size>1 else [all_paths]
+		print '>> SLINGSHOT: %s paths divided into %s segments' % (len(all_paths), len(segments))
 
 	# Or am I a process created by the seed?
 	else:
@@ -70,7 +70,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	# let's go! loop over the paths
 	results=[]
 	num_paths=len(paths)
-	pronoun=random.choice(['his  ','her  ','their'])
+	pronoun='their'
 	zlen=len(str(num_paths))
 	zlen_rank=len(str(size))
 	for i,path in enumerate(paths):
@@ -98,6 +98,11 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 			# Make dir...
 			if not os.path.exists(results_dir): os.makedirs(results_dir)
 
+			# Copy pathlist
+			results_fnfn_pathlist = os.path.join(results_dir,'pathlist.txt')
+			results_fnfn_metadata = os.path.join(results_dir,'metadata.txt')
+			save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,all_paths,path_source)
+
 			# Save JSON
 			results_fnfn_json = os.path.join(results_dir,'results.json')
 			save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
@@ -111,6 +116,22 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 		print '>> SLINGSHOT: Finished everything in %s seconds!' % (t4-t1).total_seconds()
 
 
+
+
+def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path_source):
+	with open(results_fnfn_pathlist,'w') as of:
+		for path in paths:
+			of.write(path+'\n')
+
+	path_pathlists = CONFIG.get('PATH_PATHLISTS','')
+	pathlist_path_source = os.path.join(path_pathlists,path_source)
+
+	if os.path.exists(path_source) and is_csv(path_source):
+		from shutil import copyfile
+		copyfile(path_source, results_fnfn_metadata)
+	elif os.path.exists(pathlist_path_source) and is_csv(path_source):
+		from shutil import copyfile
+		copyfile(path_source, results_fnfn_metadata)
 
 
 
@@ -147,18 +168,43 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 			if fn.endswith(ext):
 				yield os.path.join(root,fn)
 
-def get_paths_from_pathlist(_fnfn):
-	with open(_fnfn) as pf:
-		paths=[line.strip() for line in pf]
-		paths=[x for x in paths if x]
-		return paths
 
-def load_paths(path_source,path_ext,limit,shuffle_paths):
+
+
+def get_paths_from_csv(_fnfn,key_path=KEY_PATH,sep='\t'):
+	paths=[]
+	#with codecs.open(_fnfn,encoding='utf-8') as pf:
+	with open(_fnfn) as pf:
+		reader=csv.DictReader(pf,delimiter=sep)
+		for dx in reader:
+			path=dx.get(key_path,'')
+			if path: paths+=[path]
+	return paths
+
+def is_csv(_fnfn,sep='\t'):
+	if not os.path.exists(_fnfn): return False
+	if os.path.isdir(_fnfn): return False
+	with open(_fnfn) as pf:
+		first_line=pf.readline()
+		return sep in first_line
+
+def get_paths_from_pathlist(_fnfn,sep='\t',key_path=KEY_PATH):
+		if is_csv(_fnfn,sep=sep):
+			return get_paths_from_csv(_fnfn,key_path=key_path,sep=sep)
+		else:
+			with open(_fnfn) as pf:
+				paths=[line.strip() for line in pf]
+				paths=[x for x in paths if x]
+				return paths
+
+
+
+def load_paths(path_source,path_ext,limit,shuffle_paths,key_path=KEY_PATH):
 	if path_source:
 		if os.path.isdir(path_source):
 			paths=list(get_all_paths_from_folder(path_source,path_ext)) if path_source else None
 		elif os.path.exists(path_source):
-			paths=get_paths(path_source)
+			paths=get_paths_from_pathlist(path_source,key_path=key_path)
 		else:
 			path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 			pathlist_path_source = os.path.join(path_pathlists,path_source)
