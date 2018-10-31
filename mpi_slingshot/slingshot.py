@@ -8,11 +8,11 @@ import unicodecsv as csv
 from mpi4py import MPI
 from collections import defaultdict,Counter
 from .config import CONFIG
-KEY_PATH=CONFIG.get('KEY_PATH','_path')
+PATH_KEY=CONFIG.get('PATH_KEY','_path')
+PATH_EXT=CONFIG.get('PATH_EXT','txt').replace('.','')
 
 
-
-def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,key_path=KEY_PATH,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
+def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,path_key=PATH_KEY,path_ext=None,cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
 	"""
 	Main function
 	"""
@@ -21,11 +21,11 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	stone=load_stone_in_sling(path_sling,stone_name)
 
 	# Load paths
-	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths) if not paths else paths
+	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key) if not paths else paths
 
 	# Break if these weren't returned
 	if not stone or not all_paths:
-		print '!!',[path_sling,stone_name,path_source,path_ext]
+		#print '!!',[path_sling,stone_name,path_source,path_ext]
 		return
 
 	# Save cache dir
@@ -171,13 +171,20 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 
 
 
-def get_paths_from_csv(_fnfn,key_path=KEY_PATH,sep='\t'):
+def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,sep='\t'):
 	paths=[]
 	#with codecs.open(_fnfn,encoding='utf-8') as pf:
 	with open(_fnfn) as pf:
 		reader=csv.DictReader(pf,delimiter=sep)
 		for dx in reader:
-			path=dx.get(key_path,'')
+			path=dx.get(path_key,'')
+			if not path: continue
+			path_from_fnfn = os.path.join(os.path.dirname(_fnfn),path)
+			#path_from_fnfn_plus_ext = '.'.join(path_from_fnfn.split('.')+[path_ext])
+			if not os.path.exists(path) and os.path.exists(path_from_fnfn):
+				path=os.path.abspath(path_from_fnfn)
+			#elif not os.path.exists(path) and os.path.exists(path_from_fnfn_plus_ext):
+			#	path=os.path.abspath(path_from_fnfn_plus_ext)
 			if path: paths+=[path]
 	return paths
 
@@ -188,9 +195,9 @@ def is_csv(_fnfn,sep='\t'):
 		first_line=pf.readline()
 		return sep in first_line
 
-def get_paths_from_pathlist(_fnfn,sep='\t',key_path=KEY_PATH):
+def get_paths_from_pathlist(_fnfn,sep='\t',path_key=PATH_KEY):
 		if is_csv(_fnfn,sep=sep):
-			return get_paths_from_csv(_fnfn,key_path=key_path,sep=sep)
+			return get_paths_from_csv(_fnfn,path_key=path_key,sep=sep)
 		else:
 			with open(_fnfn) as pf:
 				paths=[line.strip() for line in pf]
@@ -199,21 +206,22 @@ def get_paths_from_pathlist(_fnfn,sep='\t',key_path=KEY_PATH):
 
 
 
-def load_paths(path_source,path_ext,limit,shuffle_paths,key_path=KEY_PATH):
+def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY):
 	if path_source:
 		if os.path.isdir(path_source):
 			paths=list(get_all_paths_from_folder(path_source,path_ext)) if path_source else None
 		elif os.path.exists(path_source):
-			paths=get_paths_from_pathlist(path_source,key_path=key_path)
+			paths=get_paths_from_pathlist(path_source,path_key=path_key)
 		else:
 			path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 			pathlist_path_source = os.path.join(path_pathlists,path_source)
 			if os.path.exists(pathlist_path_source):
 				paths=get_paths(pathlist_path_source)
+	paths=paths[:limit]
+	paths=[p for p in paths if os.path.exists(p)]
 	if not paths:
 		print '!! no paths given or found at %s' % path_source if path_source else ''
 		return
-	paths=paths[:limit]
 	if shuffle_paths:
 		random.shuffle(paths)
 	return paths

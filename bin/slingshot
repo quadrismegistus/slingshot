@@ -19,6 +19,7 @@ if __name__ == '__main__':
 	parser.add_argument('-sling',help="Path to the python or R file of code (ending in .py or .R)")
 	parser.add_argument('-stone',help='The name of the function in the code that takes a string filepath')
 	parser.add_argument('-pathlist',help='A text file with a path per line')
+	parser.add_argument('-pathkey',help='If text file given is a TSV, which column is the path located under?',default='')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered',default='txt')
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
@@ -88,10 +89,11 @@ if __name__ == '__main__':
 	if args.mfw: Scmd+=' -mfw %s' % args.mfw
 
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
+	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
+		pathkey=args.pathkey,
 		path_ext=path_ext,
 		limit=limit,
 		savedir=savedir,
@@ -143,6 +145,6 @@ if __name__ == '__main__':
 
 
 
-	#os.system(command)
-	import subprocess
-	subprocess.check_output(command,shell=True)
+	#import subprocess
+	#subprocess.check_output(command,shell=True)
+	os.system(command)
