@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	parser.add_argument('-stone',help='The name of the function in the code that takes a string filepath')
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
-	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
+	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered',default='txt')
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
 
 	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
@@ -48,17 +48,22 @@ if __name__ == '__main__':
 		parser.print_help()
 		sys.exit(1)
 
+	Scmd = 'slingshot -sling {sling} -stone {stone}'.format(sling=args.sling, stone=args.stone)
+
 	# Construct Goliath
 	path_ext=None
 	if args.pathlist:
-		path_source = args.pathlist
+		path_source = os.path.abspath(args.pathlist)
+		Scmd += ' -pathlist %s' % path_source
 	elif args.path:
-		path_source = args.path
+		path_source = os.path.abspath(args.path)
 		path_ext = args.ext if args.ext else None
+		Scmd += ' -path %s%s' % (path_source, ' -ext '+path_ext if path_ext else '')
 	else:
 		print "error: neither -pathlist PATHLIST nor -path PATH specified"
 		parser.print_help()
 		sys.exit(1)
+
 
 	# Other options
 	limit = int(args.limit) if args.limit else None
@@ -71,20 +76,28 @@ if __name__ == '__main__':
 	out_fnfn=os.path.join(savedir,'output.txt')
 	err_fnfn=os.path.join(savedir,'errors.txt')
 	cmd_fnfn=os.path.join(savedir,'cmd.txt')
+	tocache=not args.nocache
+	tosave=args.nosave is False
+
+	#other_args=[limit,savedir,tocache,tosave,args.mfw]
+	if limit: Scmd+=' -limit %s' % limit
+	if savedir: Scmd+=' -savedir %s' % savedir
+	if not tocache: Scmd+=' -nocache'
+	if not tosave: Scmd+=' -nosave'
+	if args.mfw: Scmd+=' -mfw %s' % args.mfw
 
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(sling='{sling}', stone='{stone}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
+	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
 		path_ext=path_ext,
 		limit=limit,
 		savedir=savedir,
-		cache=not args.nocache,
-		tosave=args.nosave is False,
+		cache=tocache,
+		tosave=tosave,
 		mfw=args.mfw
 	)
-
 
 	if not args.debug:
 		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else ' '
@@ -113,6 +126,26 @@ if __name__ == '__main__':
 		elif args.nosave and args.quiet:
 			command = command + ' > {out}'.format(out='/dev/null')
 
-	print '>> EXECUTING:',command
+
+
+
+	# parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
+	# parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
+	# parser.add_argument('-mem',help='How much memory should each CPU have',default='2G')
+	# parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=4)
+	# parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
+	# parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
+
+	if args.sbatch: Scmd+=' -sbatch'
+	if args.hours: Scmd+=' -hours %s' % args.hours
+	if args.mem: Scmd+=' -mem %s' % args.mem
+	if args.parallel: Scmd+=' -parallel %s' % args.parallel
+	if args.debug: Scmd+=' -debug'
+	if args.quiet: Scmd+=' -quiet'
+
+	print '>> SLINGSHOT COMMAND:',Scmd
+	print
+	print '>> EXECUTING COMMAND:',command
+	print
 	with open(cmd_fnfn,'w') as f: f.write(command+'\n')
 	os.system(command)
