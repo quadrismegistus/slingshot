@@ -180,11 +180,11 @@ def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,sep='\t'):
 			path=dx.get(path_key,'')
 			if not path: continue
 			path_from_fnfn = os.path.join(os.path.dirname(_fnfn),path)
-			#path_from_fnfn_plus_ext = '.'.join(path_from_fnfn.split('.')+[path_ext])
+			path_from_fnfn_plus_ext = '.'.join(path_from_fnfn.split('.')+[path_ext])
 			if not os.path.exists(path) and os.path.exists(path_from_fnfn):
 				path=os.path.abspath(path_from_fnfn)
-			#elif not os.path.exists(path) and os.path.exists(path_from_fnfn_plus_ext):
-			#	path=os.path.abspath(path_from_fnfn_plus_ext)
+			elif not os.path.exists(path) and os.path.exists(path_from_fnfn_plus_ext):
+				path=os.path.abspath(path_from_fnfn_plus_ext)
 			if path: paths+=[path]
 	return paths
 
