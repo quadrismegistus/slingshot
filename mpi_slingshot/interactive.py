@@ -1,6 +1,7 @@
 import os,imp,argparse,sys
 from .logos import SLINGSHOT
 from .config import CONFIG
+from .slingshot import is_csv
 
 
 def interactive(parser, SLING_EXT=['py','R']):
@@ -98,6 +99,7 @@ def interactive(parser, SLING_EXT=['py','R']):
 				args.ext = raw_input('\n>> EXT: '+arg2help['ext']+'\n>> ').strip()
 				args.path=path
 			elif is_csv(path):
+				args.path=path
 				args.pathkey=raw_input('\n>> COLUMN: '+arg2help['pathkey']+'\n>> ').strip()
 			else:
 				args.path=path
