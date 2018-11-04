@@ -43,6 +43,9 @@ if __name__ == '__main__':
 	if len(sys.argv)<2:
 		from mpi_slingshot.interactive import interactive
 		args = interactive(parser)
+		IS_INTERACTIVE=True
+	else:
+		IS_INTERACTIVE=False
 
 	# Set defaults if need be
 	todefaults=['parallel']
@@ -58,7 +61,7 @@ if __name__ == '__main__':
 		parser.print_help()
 		sys.exit(1)
 
-	Scmd = 'slingshot -sling {sling} -stone {stone}'.format(sling=args.sling, stone=args.stone)
+	Scmd = 'slingshot \\\n\t-sling {sling} \\\n\t-stone {stone}'.format(sling=args.sling, stone=args.stone)
 
 	# Construct Goliath
 	path_ext=None
@@ -168,4 +171,4 @@ if __name__ == '__main__':
 
 	#import subprocess
 	#subprocess.check_output(command,shell=True)
-	#os.system(command)
+	if not IS_INTERACTIVE: os.system(command)
