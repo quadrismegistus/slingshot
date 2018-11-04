@@ -250,7 +250,7 @@ def save_results_json(results_fnfn,cache_results,cache_path,stream_results):
 					#results_f.seek(-2,1)
 					results_f.write(',\n')
 				# delete cache file
-				os.unlink(fnfn_c)
+				#os.unlink(fnfn_c)
 			results_f.seek(-3,1)
 			results_f.write('\n]\n\n')
 	else:

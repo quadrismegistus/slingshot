@@ -34,7 +34,7 @@ if __name__ == '__main__':
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
 	parser.add_argument('-mem',help='How much memory should each CPU have',default='2G')
-	parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=4)
+	parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=16)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
 	args = parser.parse_args()
@@ -43,6 +43,12 @@ if __name__ == '__main__':
 	if len(sys.argv)<2:
 		from mpi_slingshot.interactive import interactive
 		args = interactive(parser)
+
+	# Set defaults if need be
+	todefaults=['parallel']
+	for argname in todefaults:
+		default=parser.get_default(argname)
+		setattr(args,argname,default)
 
 	# Load slingshot
 	if not args.sling or not args.stone:
@@ -108,8 +114,9 @@ if __name__ == '__main__':
 		mfw=args.mfw
 	)
 
+
 	if not args.debug:
-		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else ' '
+		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else str(parser.get_default('parallel'))
 		command = 'mpirun'+mpi_opts+command
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 	if args.sbatch:
@@ -145,14 +152,20 @@ if __name__ == '__main__':
 	if args.debug: Scmd+=' -debug'
 	if args.quiet: Scmd+=' -quiet'
 
-	print '>> SLINGSHOT COMMAND:',Scmd
+	print '## In order to execute slingshot, you must paste in either of the following commands,'
+	print '## preferably the former: a custom argument syntax, which you can see at:'
+	print '## slingshot --help. ##'
 	print
-	print '>> EXECUTING COMMAND:',command
-	print
-	with open(cmd_fnfn,'w') as f: f.write(command+'\n')
+	otxt="""
+>> SLINGSHOT COMMAND: {Scmd}
+
+>> EXECUTING COMMAND: {command}
+	""".format(Scmd=Scmd,command=command)
+	print otxt
+	with open(cmd_fnfn,'w') as f: f.write(otxt)
 
 
 
 	#import subprocess
 	#subprocess.check_output(command,shell=True)
-	os.system(command)
+	#os.system(command)
