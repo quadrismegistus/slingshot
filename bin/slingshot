@@ -37,6 +37,7 @@ if __name__ == '__main__':
 	parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=16)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
+	parser.add_argument('-dryrun',help='Dry run: do not execute',action='store_true')
 	args = parser.parse_args()
 
 	# If no arguments... go into interactive mode!
@@ -164,7 +165,7 @@ if __name__ == '__main__':
 
 	#import subprocess
 	#subprocess.check_output(command,shell=True)
-	if not IS_INTERACTIVE:
+	if not IS_INTERACTIVE and not args.dryrun:
 		print '\n!! EXCUTING NOW @ %s !!\n' % now(seconds=True)
 		print otxt
 		os.system(command)
