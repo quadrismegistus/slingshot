@@ -67,17 +67,17 @@ if __name__ == '__main__':
 	path_ext=None
 	if args.pathlist:
 		path_source = os.path.abspath(args.pathlist)
-		Scmd += ' -pathlist %s' % path_source
+		Scmd += ' \\\n\t-pathlist %s' % path_source
 	elif args.path:
 		path_source = os.path.abspath(args.path)
 		path_ext = args.ext if args.ext else None
-		Scmd += ' -path %s%s' % (path_source, ' -ext '+path_ext if path_ext else '')
+		Scmd += ' \\\n\t-path %s%s' % (path_source, ' \\\n\t-ext '+path_ext if path_ext else '')
 	else:
 		print "error: neither -pathlist PATHLIST nor -path PATH specified"
 		parser.print_help()
 		sys.exit(1)
-	if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
-	if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
+	if args.pathprefix: Scmd+=' \\\n\t-pathprefix "%s"' % args.pathprefix
+	if args.pathsuffix: Scmd+=' \\\n\t-pathsuffix "%s"' % args.pathsuffix
 
 
 	# Other options
@@ -95,11 +95,11 @@ if __name__ == '__main__':
 	tosave=args.nosave is False
 
 	#other_args=[limit,savedir,tocache,tosave,args.mfw]
-	if limit: Scmd+=' -limit %s' % limit
-	if savedir: Scmd+=' -savedir %s' % savedir
-	if not tocache: Scmd+=' -nocache'
-	if not tosave: Scmd+=' -nosave'
-	if args.mfw: Scmd+=' -mfw %s' % args.mfw
+	if limit: Scmd+=' \\\n\t-limit %s' % limit
+	if savedir: Scmd+=' \\\n\t-savedir %s' % savedir
+	if not tocache: Scmd+=' \\\n\t-nocache'
+	if not tosave: Scmd+=' \\\n\t-nosave'
+	if args.mfw: Scmd+=' \\\n\t-mfw %s' % args.mfw
 
 	# Execute!
 	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
@@ -147,28 +147,28 @@ if __name__ == '__main__':
 
 
 	if args.sbatch:
-		Scmd+=' -sbatch'
-		if args.hours: Scmd+=' -hours %s' % args.hours
-		if args.mem: Scmd+=' -mem %s' % args.mem
+		Scmd+=' \\\n\t-sbatch'
+		if args.hours: Scmd+=' \\\n\t-hours %s' % args.hours
+		if args.mem: Scmd+=' \\\n\t-mem %s' % args.mem
 
-	if args.parallel: Scmd+=' -parallel %s' % args.parallel
-	if args.debug: Scmd+=' -debug'
-	if args.quiet: Scmd+=' -quiet'
+	if args.parallel: Scmd+=' \\\n\t-parallel %s' % args.parallel
+	if args.debug: Scmd+=' \\\n\t-debug'
+	if args.quiet: Scmd+=' \\\n\t-quiet'
 
-	print '## In order to execute slingshot, you must paste in either of the following commands,'
-	print '## preferably the former: a custom argument syntax, which you can see at:'
-	print '## slingshot --help. ##'
-	print
-	otxt="""
->> SLINGSHOT COMMAND: {Scmd}
 
->> EXECUTING COMMAND: {command}
-	""".format(Scmd=Scmd,command=command)
-	print otxt
+	otxt='>> SLINGSHOT COMMAND:\n{Scmd}\n\n>> EXECUTING COMMAND:\n{command}\n'.format(Scmd=Scmd,command=command)
 	with open(cmd_fnfn,'w') as f: f.write(otxt)
 
 
 
 	#import subprocess
 	#subprocess.check_output(command,shell=True)
-	if not IS_INTERACTIVE: os.system(command)
+	if not IS_INTERACTIVE:
+		print '\n!! EXCUTING NOW @ %s !!\n' % now(seconds=True)
+		print otxt
+		os.system(command)
+	else:
+		print '## In order to execute slingshot, you must paste in either of the following commands,'
+		print '## preferably the former: a custom argument syntax, which you can see at:'
+		print '## slingshot --help. ##'
+		print otxt
