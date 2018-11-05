@@ -50,8 +50,9 @@ if __name__ == '__main__':
 	# Set defaults if need be
 	todefaults=['parallel']
 	for argname in todefaults:
-		default=parser.get_default(argname)
-		setattr(args,argname,default)
+		if not getattr(args,argname):
+			default=parser.get_default(argname)
+			setattr(args,argname,default)
 
 	# Load slingshot
 	if not args.sling or not args.stone:
