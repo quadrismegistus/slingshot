@@ -178,7 +178,7 @@ def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,path_prefix='',
 		reader=csv.DictReader(pf,delimiter=sep)
 		for dx in reader:
 			path=dx.get(path_key,'')
-			print path,dx
+			print path_key,path,len(dx)
 			if not path: continue
 			if path_prefix: path=os.path.join(path_prefix,path)
 			if path_suffix: path=path+path_suffix
