@@ -178,6 +178,7 @@ def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,path_prefix='',
 		reader=csv.DictReader(pf,delimiter=sep)
 		for dx in reader:
 			path=dx.get(path_key,'')
+			print path,dx
 			if not path: continue
 			if path_prefix: path=os.path.join(path_prefix,path)
 			if path_suffix: path=path+path_suffix
@@ -204,7 +205,6 @@ def is_csv(_fnfn,sep='\t'):
 
 def get_paths_from_pathlist(_fnfn,sep='\t',path_key=PATH_KEY,path_prefix='',path_suffix=''):
 	_fnfn_is_csv=is_csv(_fnfn,sep=sep)
-	print _fnfn,_fnfn_is_csv
 	if _fnfn_is_csv:
 		return get_paths_from_csv(_fnfn,path_key=path_key,sep=sep,path_prefix=path_prefix,path_suffix=path_suffix)
 	else:
