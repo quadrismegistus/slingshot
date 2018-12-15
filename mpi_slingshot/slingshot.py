@@ -180,6 +180,7 @@ def get_all_paths_from_folder(rootdir,ext='.txt'):
 def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,path_prefix='',path_suffix='',sep='\t'):
 	paths=[]
 	#with codecs.open(_fnfn,encoding='utf-8') as pf:
+	if not path_key: path_key=DEFAULT_PATH_KEY
 	with open(_fnfn) as pf:
 		reader=csv.DictReader(pf,delimiter=sep)
 		for dx in reader:
