@@ -159,7 +159,7 @@ def load_stone_in_sling(path_sling,stone_name):
 		return stone
 
 	if path_sling.endswith('.R'):
-		from rpy2.robjects import r as R
+		from rpy2.robjects import r as Rno
 		# load all source
 		with open(path_sling) as f:
 			code=f.read()
@@ -184,7 +184,7 @@ def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,path_prefix='',
 		reader=csv.DictReader(pf,delimiter=sep)
 		for dx in reader:
 			path=dx.get(path_key,'')
-			print path_key,path,len(dx)
+			print [path_key,path,len(dx)]
 			if not path: continue
 			if path_prefix: path=os.path.join(path_prefix,path)
 			if path_suffix: path=path+path_suffix
