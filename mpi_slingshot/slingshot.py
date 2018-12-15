@@ -203,15 +203,17 @@ def is_csv(_fnfn,sep='\t'):
 		return sep in first_line
 
 def get_paths_from_pathlist(_fnfn,sep='\t',path_key=PATH_KEY,path_prefix='',path_suffix=''):
-		if is_csv(_fnfn,sep=sep):
-			return get_paths_from_csv(_fnfn,path_key=path_key,sep=sep,path_prefix=path_prefix,path_suffix=path_suffix)
-		else:
-			with open(_fnfn) as pf:
-				paths=[line.strip() for line in pf]
-				paths=[x for x in paths if x]
-				if path_prefix: paths=[os.path.join(path_prefix,x) for x in paths]
-				if path_suffix: paths=[path+path_suffix for x in paths]
-				return paths
+	_fnfn_is_csv=is_csv(_fnfn,sep=sep)
+	print _fnfn,_fnfn_is_csv
+	if _fnfn_is_csv:
+		return get_paths_from_csv(_fnfn,path_key=path_key,sep=sep,path_prefix=path_prefix,path_suffix=path_suffix)
+	else:
+		with open(_fnfn) as pf:
+			paths=[line.strip() for line in pf]
+			paths=[x for x in paths if x]
+			if path_prefix: paths=[os.path.join(path_prefix,x) for x in paths]
+			if path_suffix: paths=[path+path_suffix for x in paths]
+			return paths
 
 
 
