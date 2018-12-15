@@ -321,7 +321,6 @@ def iterload(filename,encoding='utf-8'):
 				pass
 
 
-
 def rconvert(robj):
 	import rpy2
 	#if type(robj) == rpy2.robjects.vectors.ListVector:
@@ -332,3 +331,22 @@ def rconvert(robj):
 		from rpy2.robjects import pandas2ri
 		pandas2ri.activate()
 		return pandas2ri.ri2py(robj)
+
+
+### Loading results
+def stream_results(path_cache):
+	import ujson as json
+	for fn in os.listdir(path_cache):
+		if not fn.endswith('.json'): continue
+		fnfn=os.path.join(path_cache,fn)
+		with open(fnfn) as f:
+			for i,ln in enumerate(f):
+				line=ln[:-2]
+				if not line: continue
+				try:
+					path,data=json.loads(line)
+				except ValueError as e:
+					print '!!',e
+					print "!!",line[:200]
+					continue
+				yield (path,data)
