@@ -15,7 +15,7 @@ PATH_KEY=CONFIG.get('PATH_KEY','')
 PATH_EXT=CONFIG.get('PATH_EXT','').replace('.','')
 
 if not PATH_KEY: PATH_KEY=DEFAULT_PATH_KEY
-if not PATH_EXT: PATH_KEY=DEFAULT_PATH_EXT
+if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
 
 def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
