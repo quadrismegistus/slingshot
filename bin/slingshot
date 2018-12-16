@@ -93,9 +93,10 @@ if __name__ == '__main__':
 	limit = int(args.limit) if args.limit else None
 	savedir=args.savedir
 	if not savedir:
+		basename_path_source=os.path.basename(path_source)
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
 		#savedir='/'.join(['results_slingshot',module,args.stone,now()])
-		savedir='/'.join(['results_slingshot',module,args.stone])
+		savedir='/'.join(['results_slingshot',basename_path_source,module,args.stone])
 	if not os.path.exists(savedir): os.makedirs(savedir)
 	out_fnfn=os.path.join(savedir,'output.txt')
 	err_fnfn=os.path.join(savedir,'errors.txt')
