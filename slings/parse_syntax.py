@@ -7,6 +7,7 @@ MAX_LEN = 1000000 # spacy
 
 # imports
 import os,sys,codecs,xopen
+print 'loaded'
 
 # Load spacy
 import spacy
