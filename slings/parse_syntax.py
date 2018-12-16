@@ -55,7 +55,7 @@ def parse(txt,max_len=MAX_LEN):
 				'head_tag':token.head.tag_,
 				'sent_start':token.sent.start
 				#'children':'|'.join([child.text for child in token.children])
-			   }
+			}
 			yield td
 	nownow=time.time()
 	duration=nownow-now
