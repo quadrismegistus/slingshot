@@ -6,8 +6,8 @@ STONES = ['parse_path']
 MAX_LEN = 1000000 # spacy
 
 # imports
-import os,sys,codecs,xopen
-print 'loaded'
+import os,sys,codecs
+from xopen import xopen
 
 # Load spacy
 import spacy
