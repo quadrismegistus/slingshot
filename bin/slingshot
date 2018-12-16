@@ -12,6 +12,11 @@ def now(now=None,seconds=False):
 
 	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
 
+def has_minimal_info(args):
+	if not args.sling: return False
+	if not args.stone: return False
+	if not (args.pathlist or args.path): return False
+	return True
 
 if __name__ == '__main__':
 	# parse arguments
@@ -41,7 +46,9 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	# If no arguments... go into interactive mode!
-	if len(sys.argv)<2:
+
+
+	if len(sys.argv)<2 or not has_minimal_info(args):
 		from mpi_slingshot.interactive import interactive
 		args = interactive(parser)
 		IS_INTERACTIVE=True
