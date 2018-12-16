@@ -109,7 +109,7 @@ if __name__ == '__main__':
 	if savedir: Scmd+=' \\\n\t-savedir %s' % savedir
 	if not tocache: Scmd+=' \\\n\t-nocache'
 	if not tosave: Scmd+=' \\\n\t-nosave'
-	if args.mfw: Scmd+=' \\\n\t-mfw %s' % args.mfw
+	if args.mfw and args.mfw!=parser.get_default('mfw'): Scmd+=' \\\n\t-mfw %s' % args.mfw
 
 	# Execute!
 	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
