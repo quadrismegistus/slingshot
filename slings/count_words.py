@@ -3,7 +3,7 @@ import codecs,re
 
 
 def get_text_length(path):
-	with codecs.open(path,encoding='utf-8') as f:
+	with codecs.open(path,encoding='utf-8',errors='ignore') as f:
 		count=len(f.read().split())
 	return {'count':count}
 
