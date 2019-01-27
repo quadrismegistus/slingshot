@@ -11,7 +11,7 @@ def count_words_fast(path):
 	from future_builtins import map
 	from collections import Counter
 	from itertools import chain
-	with codecs.open(path,encoding='utf-8') as f:
+	with codecs.open(path,encoding='utf-8',errors='ignore') as f:
 		return Counter(chain.from_iterable(map(tokenize_fast, f)))
 
 def tokenize_fast(line):
