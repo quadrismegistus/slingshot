@@ -18,13 +18,14 @@ if not PATH_KEY: PATH_KEY=DEFAULT_PATH_KEY
 if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
 
-def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000):
+def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={}):
 	"""
 	Main function
 	"""
 
 	# Load code-sling and stone-function
-	stone=load_stone_in_sling(path_sling,stone_name)
+	if not stone:
+		stone=load_stone_in_sling(path_sling,stone_name)
 
 	# Load paths
 	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
@@ -82,7 +83,12 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	for i,path in enumerate(paths):
 		#################################################
 		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
-		result=stone(path)
+
+		try:
+			result=stone(path,results_dir=results_dir,*sling_args,**sling_kwargs)
+		except TypeError:
+			result=stone(path,*sling_args,**sling_kwargs)
+
 		if result is not None:
 			path_result=(path,result)
 			if not stream_results: results+=[path_result]
