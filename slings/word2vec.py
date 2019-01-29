@@ -109,6 +109,7 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir='./',ski
 	ofnfn=os.path.join(results_dir,'word2vec_models',ofn)
 	ofnfn_vocab=os.path.splitext(ofnfn)[0]+'.vocab.txt'
 	ofolder=os.path.dirname(ofnfn)
+	ofnfn=ofnfn+'.gz'						# add gzip compression for model
 	if not os.path.exists(ofolder):
 		try:
 			os.makedirs(ofolder)

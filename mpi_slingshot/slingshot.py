@@ -90,7 +90,6 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 		sling_kwargs2=dict(sling_kwargs.items())
 		sling_kwargs2['results_dir']=results_dir
 		if num_runs>1: sling_kwargs2['run']=run
-		print sling_kwargs2
 
 		try:
 			result=stone(path,*sling_args,**sling_kwargs2)
