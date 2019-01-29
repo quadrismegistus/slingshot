@@ -90,6 +90,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 		sling_kwargs2=dict(sling_kwargs.items())
 		sling_kwargs2['results_dir']=results_dir
 		if num_runs>1: sling_kwargs2['run']=run
+		print sling_kwargs2
 
 		try:
 			result=stone(path,*sling_args,**sling_kwargs2)
@@ -139,7 +140,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 
 def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path_source):
 	with open(results_fnfn_pathlist,'w') as of:
-		for path in paths:
+		for (path,run) in paths:
 			of.write(path+'\n')
 
 	path_pathlists = CONFIG.get('PATH_PATHLISTS','')
