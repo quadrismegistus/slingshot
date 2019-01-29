@@ -21,7 +21,11 @@ def yield_skipgrams_from_text(text,skipgram_size=10,lowercase=True):
 def save_skipgrams_from_txt_paths(path_to_list_of_txt_paths,results_dir='./',skipgram_size=10,lowercase=True):
 	output_fnfn=os.path.join(results_dir,'skipgrams',os.path.basename(path_to_list_of_txt_paths).replace('.txt','')) + '.txt'
 	output_path = os.path.dirname(output_fnfn)
-	if not os.path.exists(output_path): os.makedirs(output_path)
+	if not os.path.exists(output_path):
+		try:
+			os.makedirs(output_path)
+		except OSError:
+			pass
 	print '>> saving skipgrams to',output_fnfn,'...'
 	with codecs.open(path_to_list_of_txt_paths,encoding='utf-8') as f, codecs.open(output_fnfn,'w',encoding='utf-8') as of:
 		for ln in f:
