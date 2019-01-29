@@ -31,6 +31,10 @@ if __name__ == '__main__':
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
 
+	parser.add_argument('-kwargs',help='Keyword arguments to sling (use JSON syntax)',default='')
+
+	parser.add_argument('-numruns',help='Number of times to slingshot each path (e.g. to gen multiple word2vec models per period)',default=1)
+
 	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
 	parser.add_argument('-nocache',help='Do not cache partial results',action='store_true')
 	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_stone_timestamp]')
@@ -88,6 +92,12 @@ if __name__ == '__main__':
 	if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
 	if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
 
+	if args.numruns>1:
+		try:
+			int(args.numruns)
+			Scmd+=' -numruns %s' % args.numruns
+		except ValueError:
+			pass
 
 	# Other options
 	limit = int(args.limit) if args.limit else None
@@ -112,7 +122,7 @@ if __name__ == '__main__':
 	if args.mfw and args.mfw!=parser.get_default('mfw'): Scmd+=' -mfw %s' % args.mfw
 
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw})" """.format(
+	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns})" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
@@ -124,7 +134,8 @@ if __name__ == '__main__':
 		savedir=savedir,
 		cache=tocache,
 		tosave=tosave,
-		mfw=args.mfw
+		mfw=args.mfw,
+		numruns=args.numruns
 	)
 
 

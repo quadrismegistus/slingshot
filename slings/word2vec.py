@@ -1,6 +1,6 @@
 import os,codecs
 
-STONES = ['save_skipgrams_from_txt_paths']
+STONES = ['save_skipgrams_from_txt_paths','gen_word2vec_model_from_skipgrams']
 
 ### TOKENIZER
 def tokenize_fast(line):
@@ -85,13 +85,37 @@ class SkipgramsSampler(object):
 
 ### WORD2VEC
 
-def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir=None,skipgram_size=10,
+# STONE
+def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir='./',skipgram_size=10,run=None,
 									num_skips_wanted=None, num_workers=8, min_count=10, num_dimensions=100, sg=1, num_epochs=None):
 
-	import gensim
-	if not self.num_skips_wanted:
-		skips = gensim.models.word2vec.LineSentence(self.skipgram_fn)
-	else:
-		skips = SkipgramsSampler(self.skipgram_fn, self.num_skips_wanted)
+	"""
+	STONE CERTIFIED
+	Throw this at skipgram files to make word2vec models.
+	"""
+	import gensim,logging
+	logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
+	# Load skipgrams
+	skips = gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)
+
+	# Generate model
 	model = gensim.models.Word2Vec(skips, workers=num_workers, sg=sg, min_count=min_count, size=num_dimensions, window=skipgram_size)
+
+	# Output filename
+	ofn_l = [os.path.splitext(os.path.basename(path_to_skipgram_file))[0]]
+	if run: ofn_l+=['run=%s' % str(run).zfill(2)]
+	ofn = '.'.join(ofn_l) + '.txt'
+	ofnfn=os.path.join(results_dir,'word2vec_models',ofn)
+	ofnfn_vocab=os.path.splitext(ofnfn)[0]+'.vocab.txt'
+	ofolder=os.path.dirname(ofnfn)
+	if not os.path.exists(ofolder):
+		try:
+			os.makedirs(ofolder)
+		except OSError:
+			pass
+
+	# Save model
+	model.wv.save_word2vec_format(ofnfn, ofnfn_vocab)
+	print ">> saved:",ofnfn
+	print ">> saved:",ofnfn_vocab

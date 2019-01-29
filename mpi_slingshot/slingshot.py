@@ -18,7 +18,7 @@ if not PATH_KEY: PATH_KEY=DEFAULT_PATH_KEY
 if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
 
-def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={}):
+def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1):
 	"""
 	Main function
 	"""
@@ -29,6 +29,9 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 
 	# Load paths
 	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
+
+	# Multiply paths by runs
+	all_paths = [(path,run+1) for path in all_paths for run in range(num_runs)]
 
 	# Break if these weren't returned
 	if not stone or not all_paths:
@@ -80,12 +83,16 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	pronoun='their'
 	zlen=len(str(num_paths))
 	zlen_rank=len(str(size))
-	for i,path in enumerate(paths):
+	for i,(path,run) in enumerate(paths):
 		#################################################
 		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
+		sling_kwargs2=dict(sling_kwargs.items())
+		sling_kwargs2['results_dir']=results_dir
+		if num_runs>1: sling_kwargs2['run']=run
+
 		try:
-			result=stone(path,results_dir=results_dir,*sling_args,**sling_kwargs)
+			result=stone(path,*sling_args,**sling_kwargs2)
 		except TypeError:
 			result=stone(path,*sling_args,**sling_kwargs)
 
