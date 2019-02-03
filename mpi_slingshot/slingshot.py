@@ -5,7 +5,6 @@ except ImportError:
 	import json
 from datetime import datetime as dt
 import unicodecsv as csv
-from mpi4py import MPI
 from collections import defaultdict,Counter
 from .config import CONFIG
 DEFAULT_PATH_KEY='_path'
@@ -44,6 +43,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 
 
 	# Start MPI
+	from mpi4py import MPI
 	t1 = dt.now()
 	comm = MPI.COMM_WORLD
 	size = comm.Get_size()
