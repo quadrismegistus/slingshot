@@ -1,124 +1,165 @@
-# Poetix
 
-## Poetic processing, for Python ##
+mpi-slingshot
+=============
 
-```python
-from poetix import Poem
+A Python wrapper to "slingshot" a "rock" (function) across thousands of files using MPI.
 
-sonnet = Poem(u"""
-When in the chronicle of wasted time
-I see descriptions of the fairest wights,
-And beauty making beautiful old rhyme
-In praise of ladies dead and lovely knights,
-Then, in the blazon of sweet beauty's best,
-Of hand, of foot, of lip, of eye, of brow,
-I see their antique pen would have express'd
-Even such a beauty as you master now.
-So all their praises are but prophecies
-Of this our time, all you prefiguring;
-And, for they look'd but with divining eyes,
-They had not skill enough your worth to sing:
-For we, which now behold these present days,
-Had eyes to wonder, but lack tongues to praise.""")
+Slaying the Goliath of big data
+-------------------------------
 
-# See how poetix understood the poem
-sonnet.summary()
+We’re David. Our data is Goliath. How can we slay Goliath by extending our code over hundreds of thousands of texts? To do so, we write a little function, a “stone,” and then load it into the slingshot: the program then takes care of “throwing” the stone at hundreds of thousands of text files. It works by cloning David, basically, so that 4, 8, or 128 Davids are all pelting Goliath at the same time. More specifically, the “stone” is a function that accepts a path to text file; that function then reads and processes the text in any way at all; and then returns data in any form. That data will then be collected together and saved in both JSON and, where possible, as a TSV, the latter of which can be opened directly in Python/Pandas, R, and Excel.
 
-      (#s,#l)  parse                                             rhyme      #feet    #syll    #parse
-    ---------  ------------------------------------------------  -------  -------  -------  --------
-         1.1   WHEN|in.the|CHRON|i|CLE*|of|WAST|ed|TIME          a              5       10         2
-         1.2   i|SEE|de|SCRIP|tions|OF*|the|FAI|rest|WIGHTS      b              5       10         1
-         1.3   and|BEAU|ty|MAK|ing|BEAU|ti|FUL*|old*|RHYME       a              5       10         3
-         1.4   in|PRAISE|of|LAD|ies|DEAD|and|LOVE|ly|KNIGHTS     b              5       10         1
-         1.5   THEN|in.the|BLA|zon|OF*|sweet*|BEAU|tys|BEST      c              5       10         8
-         1.6   of|HAND|of|FOOT|of|LIP|of|EYE|of|BROW             d              5       10         1
-         1.7   i|SEE|their.an*|TIQUE.PEN*|would|HAVE|ex|PRESSD   c              4       10         5
-         1.8   EV|en|SUCH*|a|BEAU|ty|AS*|you|MAS|ter|NOW         d              6       11         1
-         1.9   so|ALL|their|PRAIS|es|ARE*|but|PRO|phe|CIES*      e              5       10         3
-         1.1   OF*|this.our|TIME|all|YOU*|pre|FIG|ur|ING*        f              5       10        15
-         1.11  and.for|THEY.LOOKD*|but|WITH*|di|VIN|ing|EYES     e              4       10         3
-         1.12  THEY|had.not|SKILL|en|OUGH|your|WORTH|to|SING     f              5       10         2
-         1.13  for|WE|which|NOW|be|HOLD|these|PRE|sent|DAYS      e              5       10         1
-         1.14  had|EYES|to|WON|der|BUT*|lack*|TONGUES|to|PRAISE  e              5       10         3
+In more technical lingo, slingshot is basically a minimalist map/reduce framework: we “map” a function onto many texts simultaneously, and then “reduce” the data back into a single representation. But I never found “MapReduce” a very evocative image or a good analysis of what’s really happening in the process. Whereas: David-clones fighting Goliath! Much more accurate.
+
+Running interactively (start here)
+----------------------------------
+
+Run in your Terminal:
+
+.. code-block::
+
+   slingshot
 
 
-    estimated schema
-    ----------
-    meter: Iambic
-    feet: Pentameter
-    syllables: 10
-    rhyme: Sonnet, Shakespearean (abab cdcd efefgg)
+You should see a prompt:
 
-```python
-# Get all the statistics
-sonnet.statd
-```
+.. code-block::
 
-    {'beat_scheme': (5,),
-     'beat_scheme_diff': 6,
-     'beat_scheme_length': 1,
-     'beat_scheme_repr': 'Pentameter',
-     'beat_scheme_type': 'Invariable',
-     'meter_ambiguity': 3.5,
-     'meter_constraint_TOTAL': 0.14285714285714285,
-     'meter_constraint_footmin-f-resolution': 0.022556390977443608,
-     'meter_constraint_footmin-w-resolution': 0.0,
-     'meter_constraint_strength_w=>-p': 0.0,
-     'meter_constraint_stress_s=>-u': 0.09774436090225563,
-     'meter_constraint_stress_w=>-p': 0.022556390977443608,
-     'meter_length_avg_line': 10.071428571428571,
-     'meter_length_avg_parse': 10.071428571428571,
-     'meter_mpos_s': 0.5037593984962406,
-     'meter_mpos_ss': 0.015037593984962405,
-     'meter_mpos_w': 0.43609022556390975,
-     'meter_mpos_ww': 0.045112781954887216,
-     'meter_perc_lines_ending_s': 1.0,
-     'meter_perc_lines_fourthpos_s': 0.8571428571428571,
-     'meter_perc_lines_fourthpos_w': 0.14285714285714285,
-     'meter_perc_lines_starting_s': 0.35714285714285715,
-     'meter_perc_lines_starting_w': 0.6428571428571429,
-     'meter_type_foot': 'binary',
-     'meter_type_head': 'final',
-     'meter_type_scheme': 'iambic',
-     'num_lines': 14,
-     'rhyme_scheme': ('Sonnet, Shakespearean', 'abab cdcd efefgg'),
-     'rhyme_scheme_accuracy': 0.6363636363636364,
-     'rhyme_scheme_form': 'abab cdcd efefgg',
-     'rhyme_scheme_name': 'Sonnet, Shakespearean',
-     'rhyme_schemes': [(('Quatrain And Triplet', 'ababccc'), 0.4),
-      (('Sonnet C', 'ababacdc edefef'), 0.4),
-      (('Sonnet E', 'abab cbcd cdedee'), 0.4117647058823529),
-      (('Sonnet A', 'abab cdcd eefeff'), 0.6153846153846154),
-      (('Sonnet, Shakespearean', 'abab cdcd efefgg'), 0.6363636363636364)],
-     'syll_scheme': (10,),
-     'syll_scheme_diff': 1,
-     'syll_scheme_length': 1,
-     'syll_scheme_repr': 10,
-     'syll_scheme_type': 'Invariable'}
+            :o+s/+:                           .///`
+          `d-o`+:/h+`                       .+y-``+o.
+           d/+++/++om+:-                   +ho+yyo.`y-
+          :y+oo+:/++hdoso/-               yh+/+/osy:s+
+          -yy-/+o++osm``+o:+-           `/osyso+ooyd-
+           -do/oo-:.`h.  .+::+`        /+//o-`-hhdms-
+            -om.-`-- :h    :o-o-     .o-+-s-.. ss-s+++`
+              s+ :`:- ss    .s-s.   /o`+.o../.ho   :ooo/
+              `d- -`/. yo    `s-s `o/.+-+.-o/h:     `:soo-
+               .h. - + `y+    `y:yo-:::/-:+ys`        `:oso.
+                -y``-`/ `s+`   /ho::-/+:-+y:            `+os/
+                 -s`.--: `/s++ys+::++/.:s/`               -sss`
+                  -s`::.+` .:/::-- `-/s/`                  `soh.
+                   -o`-`:+ ``-..:`-ssh`                     `y/d`
+                    .s- .s    `.:yds:s`                      -y+y
+                     +h- /  - `+/N:-h-+                       h`N`
+                     m-` ``o. ` ss  oos.                      y.N-
+                    :d-:.:o- `:.m`   o+s`                     h-N`
+                    h/o`/+-  +`y+     oss`   `````           :soy
+                   -h-//-/  :-:h       oss:/+////+o+:.     `/s:m.
+                   d-+--+  `+`d.       `hsyy.`     .:+s/` -y+-d-
+                  /s `+ +  o.y:        oo./sh:       `/dyoy/+y.
+                 `d` o- / -/+o         d:  ..       .ydyysso:
+                 /s +/. .+-.y          :y-`         //sN:`
+                 d.o+`  `s y.           `+so/:--...-:sh-
+                :yo:...:+.+-               -/++ooo++:.
+                hoo::ooo-:y
+               .m/s::/s/.d.
+               `yoo///:.h-
+                 .ossoos.
+
+   ## SLINGSHOT v0.1: interactive mode (see "slingshot --help" for more)
+
+   >> SLING: Path to the python or R file of code (ending in .py or .R)
+             [numerical shortcuts for slings found in /oak/stanford/groups/malgeehe/code/mpi-slingshot/slings]
+             (1) booknlp.py  (2) count_words.R  (3) count_words.py  (4) prosodic_parser.py
+   >>
 
 
-## Research context
+You’re being prompted for the “\ **sling**\ ,” the file of python or R code. Type a number to select from some built-in slings, or type the path to a file of your own code. After selecting the “sling,” you’ll be asked for the “stone”:
 
-Code used in the [Literary Lab](http://litlab.stanford.edu)'s [Trans-historical Poetry Project](http://litlab.stanford.edu/?page_id=13), involving myself ([Ryan Heuser](http://twitter.com/quadrismegistus)), [Mark Algee-Hewitt](https://twitter.com/mark_a_h), Maria Kraxenberger, J.D. Porter, Jonny Sensenbaugh, and Justin Tackett. We presented the project at DH2014 in Lausanne. The abstract is [here](http://dharchive.org/paper/DH2014/Paper-788.xml), but a better source of information is our slideshow (with notes) [here](https://docs.google.com/presentation/d/1KyCi4s6P1fE4D3SlzlZPnXgPjwZvyv_Vt-aU3tlb24I/edit?usp=sharing). The project has been going on for 2+ years, and we are currently in the process of drafting up the project as an article for submission to a journal. Feel free to use this code for any purpose whatever, but please provide attribution back to (for now) this webpage and the aforementioned authors.
+.. code-block::
 
-The goal in the project is to develop software capable of annotating the following four features of poetic form:
-
-1. Stanzaic scheme (Syllable scheme / beat scheme) [**Complete**]:
-  * An example scheme is: _10_ (Invariable) or _8-6_ (Alternating) or _10-10-10-10-10-6_ (Complex)
-  * Invariable schemes (e.g. Inv_10 = the poem is generally always in lines of 10 syllables in length, e.g. blank verse, sonnets, heroic couplets)
-  * Alternating schemes (e.g. _Alt_8_6_ = the poem alternates between lines of 8 and 6 syllables in length. Most common in ballads)
-  * Complex schemes (basically, everything more complex than the above two. Includes odes, free verse, etc)
-
-2. Metrical scheme [**Complete**]:
-  * Produce a scansion of each of the poem's lines, and then decide if the poem's meter is predominantly:
-    1. Iambic (Binary foot, head final)
-    2. Trochaic (Binary foot, head initial)
-    3. Anapestic (Ternary foot, head final)
-    4. Dactylic (Ternary foot, head initial)
+   >> STONE: The name of the function in the code that takes a string filepath
+             (1) parse_chadwyck  (2) postprocess_chadwyck
+   >>
 
 
-Code developed in the Stanford Literary Lab by Ryan Heuser(@quadrismegistus), J.D. Porter, Jonathan Sensenbaugh, Justin Tackett, Mark Algee-Hewitt, and Maria Kraxenberger.
+Type either the appropriate # (if available [rn only for Python]), or the name of the function that is the “\ **stone**.” The stone is the function inside the code, or sling, that is to be slingshot onto the texts. Its only required argument is an absolute path to a text file: this function will take that path, load the text, and return some data, any data. The data will then be collected together at the end.
 
-Cleaned and modified in 2018. Original code is available [here](http://github.com/quadrismegistus/litlab-poetry).
-	
-	
+But which texts should we slingshot this function at? We now need to select a list of filepaths.
+
+.. code-block::
+
+   >> PATH: Enter a path either to a pathlist text file, or to a directory of texts
+            [numerical shortcuts for pathlists found in /oak/stanford/groups/malgeehe/code/mpi-slingshot/slings]
+            (1) paths_sherlock.chicago.txt
+            (2) paths_sherlock.fanfic.txt
+            (3) paths_sherlock.chadwyck_poetry.txt
+            (4) paths_sherlock.chadwyck.1600_1900.txt
+            (5) paths_ryan.chadwyck.1600_1900.txt
+            (6) paths_sherlock.dime-westerns.txt
+   >>
+
+
+Now we provide a list of files to slingshot at (a **path** or **pathlist**\ ). We can do this either by:
+
+
+* Typing a number for a pre-defined pathlist (those found in the default pathlist folder).
+* Typing out the path to a file (hit tab for autocomplete, double-tap tab to list files). This file must have one absolute path per line, nothing more.
+* Typing out the path to a directory (hit tab for autocomplete), and then supplying a file extension (e.g. “txt”, “xml”): in this case, the directory will be recursively searched, and any file matching that extension will be included in the list of filepaths.
+
+That’s all we need! The other options are optional:
+
+.. code-block::
+
+   OPTIONAL SECTION
+
+   >> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]
+   >> (Y/N)
+
+   >> DEBUG: Do not run on MPI and do not submit with sbatch? [N]
+   >> (Y/N)
+
+   >> SAVE: Save results? [Y]
+   >> (Y/N)
+
+   >> SAVEDIR: Directory to store results in [results_slingshot/prosodic_parser/parse_chadwyck]
+   >>
+
+   >> CACHE: Cache partial results? [Y]
+   >> (Y/N)
+
+   >> QUIET: Print nothing to screen? [N]
+   >> (Y/N)
+
+   >> LIMIT: Limit the number of paths to process to this number [None]
+   >>
+
+
+If we hit enter the rest of the way, this is what will happen:
+
+
+* MPI will run the default number of CPUs [4] to accomplish applying the provided function to all the texts included in the pathlist. Outputs will be printed to screen.
+* A new folder will be created in your current working directory, with the name results_slingshot/[sling]/[stone]. In that folder is output.txt, which is a log of the output printed to screen; and cmd.txt, which is the actual command that the interactive slingshot created.
+* Eventually, when the process is completed, we will also see a **results.json** and a **results.txt**. These represent the total result of the process, collected together and indexed by the original path.
+
+Results files
+^^^^^^^^^^^^^
+
+results.json
+~~~~~~~~~~~~
+
+We should now also have two results files in the folder: results.json, which is a JSON file which looks like this:
+
+.. code-block::
+
+   [
+   ["/...blah.../00022180.txt", {"count": 310725}],
+   ["/...blah.../00004615.txt", {"count": 70321}],
+   ["/...blah.../00021819.txt", {"count": 88483}],
+   ]
+
+
+results.txt
+~~~~~~~~~~~
+
+And results.txt, which has the same data but formatted as a TSV file. It reads:
+
+.. code-block::
+
+   _path   count
+   /...blah.../00022180.txt    310725
+   /...blah.../00004615.txt    70321
+   /...blah.../00021819.txt    88483
+
+
+But results.txt is different in one regard: to make results.txt, a tab-separated dataframe with (in this case) words as columns and texts as rows, we need to prune the number of columns, otherwise we’d have millions of them, and the file would become fat with empty cells (tab characters). By default, slingshot will limit the columns to the N most frequently found present in the data (in this case the N most frequent words). N can be set using the >> MFW prompt; it defaults to 10,000.

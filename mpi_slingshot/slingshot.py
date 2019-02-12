@@ -1,8 +1,5 @@
 import os,sys,codecs,numpy as np,random,imp,time,random
-try:
-	import ujson as json
-except ImportError:
-	import json
+import jsonlines
 from datetime import datetime as dt
 import unicodecsv as csv
 from collections import defaultdict,Counter
@@ -73,9 +70,9 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	# cache results?
 	cache_writer=None
 	if cache_results and cache_path:
-		cache_fn = 'results.rank=%s.json' % str(rank).zfill(4)
+		cache_fn = 'results.rank=%s.jsonl' % str(rank).zfill(4)
 		cache_fnfn = os.path.join(cache_path,cache_fn)
-		cache_writer=JSONStreamWriter(cache_fnfn)
+		cache_writer=jsonlines.open(cache_fnfn, mode='w')
 
 	# let's go! loop over the paths
 	results=[]
@@ -123,7 +120,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 			save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,all_paths,path_source)
 
 			# Save JSON
-			results_fnfn_json = os.path.join(results_dir,'results.json')
+			results_fnfn_json = os.path.join(results_dir,'results.jsonl')
 			save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
 
 			# Stream-save TSV
@@ -262,7 +259,24 @@ def save_results_json(results_fnfn,cache_results,cache_path,stream_results):
 		with codecs.open(results_fnfn,'w',encoding='utf-8') as results_f:
 			results_f.write('[\n')
 			for fn_c in sorted(os.listdir(cache_path)):
-				if not fn_c.endswith('.json'): continue
+				if not fn_c.endswith('.jsonl'): continue
+				fnfn_c=os.path.join(cache_path,fn_c)
+				with codecs.open(fnfn_c,encoding='utf-8') as f_c:
+					for line in f_c:
+						if len(line)<3: continue
+						results_f.write(line.strip()+'\n')
+	else:
+		with codecs.open(results_fnfn,'wb') as results_f:
+			json.dump(RESULTS,results_f)
+	print '>> saved:',results_fnfn
+
+
+def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):
+	if cache_results and cache_path and stream_results:
+		with codecs.open(results_fnfn,'w',encoding='utf-8') as results_f:
+			results_f.write('[\n')
+			for fn_c in sorted(os.listdir(cache_path)):
+				if not fn_c.endswith('.jsonl'): continue
 				fnfn_c=os.path.join(cache_path,fn_c)
 				with codecs.open(fnfn_c,encoding='utf-8') as f_c:
 					for line in f_c:
@@ -287,24 +301,25 @@ def save_results_txt(results_fnfn_txt,results_fnfn_json,txt_maxcols):
 	# First find KEYS
 	KEYS=set()
 	if txt_maxcols: Count=Counter()
-	for path,result in iterload(results_fnfn_json):
-		if hasattr(result,'keys'):
-			if txt_maxcols:
-				Count.update(result.keys())
-			else:
-				KEYS=set(result.keys())
+	with jsonlines.open(results_fnfn_json) as reader:
+		for path,result in reader.iter(skip_invalid=True):
+			if hasattr(result,'keys'):
+				if txt_maxcols:
+					Count.update(result.keys())
+				else:
+					KEYS=set(result.keys())
 	if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
 
 	then,now=now,time.time()
 	print '>> save_txt: found keys in %ss' % int(now-then)
-	#print KEYS
+	print KEYS
 
 	if KEYS:
 		# Then loop again to write
 		header=['_path']+sorted([unicode(x) for x in KEYS])
-		with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:
+		with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt, jsonlines.open(results_fnfn_json) as reader:
 			results_f_txt.write('\t'.join(header) + '\n')
-			for path,result in iterload(results_fnfn_json):
+			for path,result in reader.iter(skip_invalid=True):
 				result['_path']=path
 				orow=[unicode(result.get(h,'')) for h in header]
 				results_f_txt.write('\t'.join(orow) + '\n')
@@ -312,34 +327,6 @@ def save_results_txt(results_fnfn_txt,results_fnfn_json,txt_maxcols):
 			then,now=now,time.time()
 			print '>> save_txt: saved in %ss' % int(now-then)
 
-
-
-
-
-class JSONStreamWriter(object):
-	def __init__(self,filename,encoding='utf-8'):
-		self.file=codecs.open(filename,'w',encoding=encoding)
-		self.file.write('[\n')
-
-	def write(self,obj):
-		oline=json.dumps(obj)
-		oline=oline.replace('\n','\\n').replace('\r','\\r').replace('\t','\\t')
-		self.file.write(oline+',\n')
-
-	def close(self):
-		self.file.seek(-2, 1)
-		self.file.write('\n]\n')
-		self.file.close()
-
-def iterload(filename,encoding='utf-8'):
-	with codecs.open(filename,'r',encoding=encoding) as f:
-		for i,line in enumerate(f):
-			line = line[:-2] if line[-2:]==',\n' else line
-			try:
-				x=json.loads(line)
-				yield x
-			except ValueError as e:
-				pass
 
 
 def rconvert(robj):
@@ -355,10 +342,10 @@ def rconvert(robj):
 
 
 ### Loading results
-def stream_results(path_cache):
+def stream_results_json(path_cache,ext='.json'):
 	import ujson as json
 	for fn in os.listdir(path_cache):
-		if not fn.endswith('.json'): continue
+		if not fn.endswith(ext): continue
 		fnfn=os.path.join(path_cache,fn)
 		with open(fnfn) as f:
 			for i,ln in enumerate(f):
@@ -370,4 +357,12 @@ def stream_results(path_cache):
 					print '!!',e
 					print "!!",line[:200]
 					continue
+				yield (path,data)
+
+def stream_results(path_cache,ext='.jsonl'):
+	for fn in os.listdir(path_cache):
+		if not fn.endswith(ext): continue
+		fnfn=os.path.join(path_cache,fn)
+		with jsonlines.open(fnfn) as reader:
+			for path,data in enumerate(f.iter(skip_invalid=True)):
 				yield (path,data)
