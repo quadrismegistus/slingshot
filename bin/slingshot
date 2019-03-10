@@ -47,6 +47,7 @@ if __name__ == '__main__':
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
 	parser.add_argument('-dryrun',help='Dry run: do not execute',action='store_true')
+	parser.add_argument('-sbatch_args',help='Any other arguments for SLURM?',default='')
 	args = parser.parse_args()
 
 	# If no arguments... go into interactive mode!
@@ -89,8 +90,10 @@ if __name__ == '__main__':
 		print "error: neither -pathlist PATHLIST nor -path PATH specified"
 		parser.print_help()
 		sys.exit(1)
+	if args.pathkey: Scmd+=' -pathkey "%s"' % args.pathsuffix
 	if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
 	if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
+	if args.sbatch_args: Scmd+=' -sbatch_args "%s"' % args.sbatch_args
 
 	if args.numruns>1:
 		try:
@@ -149,7 +152,7 @@ if __name__ == '__main__':
 		sbatch = 'sbatch --output={out} --error={err} --job-name={jobname}'.format(out=out_fnfn,err=err_fnfn,jobname=jobname)
 
 		# v1
-		command = sbatch+' -n {n} -c 1 --mem-per-cpu {mem} -t {h}:00:00 --wrap="{cmd}"'.format(mem=args.mem, n=args.parallel, h=str(args.hours).zfill(2), cmd=cmd)
+		command = sbatch+' -n {n} -c 1 --mem-per-cpu {mem} -t {h}:00:00 --wrap="{cmd}"{other_args}'.format(mem=args.mem, n=args.parallel, h=str(args.hours).zfill(2), cmd=cmd, other_args=' '+ (args.sbatch_args.strip()) if args.sbatch_args else '')
 		# v1b
 		#command = sbatch+' -n {n} -c 1 --mem-per-cpu=2G -t {h}:00:00 --wrap="{cmd}"'.format(n=args.parallel, h=args.hours, cmd=cmd)
 
