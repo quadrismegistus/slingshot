@@ -1,5 +1,6 @@
 import os,sys,codecs,numpy as np,random,imp,time,random
 import jsonlines
+import ujson as json
 from datetime import datetime as dt
 import unicodecsv as csv
 from collections import defaultdict,Counter
@@ -68,11 +69,13 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	paths = segment
 
 	# cache results?
-	cache_writer=None
-	if cache_results and cache_path:
-		cache_fn = 'results.rank=%s.jsonl' % str(rank).zfill(4)
-		cache_fnfn = os.path.join(cache_path,cache_fn)
-		cache_writer=jsonlines.open(cache_fnfn, mode='w')
+	#cache_writer=None
+	#if cache_results and cache_path:
+	#	cache_fn = 'results.rank=%s.jsonl' % str(rank).zfill(4)
+	#	cache_fnfn = os.path.join(cache_path,cache_fn)
+	#	cache_writer=codecs.open(cache_fnfn, mode='w',encoding='utf-8')
+	results_fnfn_json = os.path.join(results_dir,'results.jsonl')
+
 
 	# let's go! loop over the paths
 	results=[]
@@ -80,26 +83,32 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	pronoun='their'
 	zlen=len(str(num_paths))
 	zlen_rank=len(str(size))
-	for i,(path,run) in enumerate(paths):
-		#################################################
-		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
-		sling_kwargs2=dict(sling_kwargs.items())
-		sling_kwargs2['results_dir']=results_dir
-		if num_runs>1: sling_kwargs2['run']=run
+	with codecs.open(results_fnfn_json, 'a', encoding='utf-8') as cache_writer:
+		for i,(path,run) in enumerate(paths):
+			#################################################
+			# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
-		try:
-			result=stone(path,*sling_args,**sling_kwargs2)
-		except TypeError:
-			result=stone(path,*sling_args,**sling_kwargs)
+			sling_kwargs2=dict(sling_kwargs.items())
+			sling_kwargs2['results_dir']=results_dir
+			if num_runs>1: sling_kwargs2['run']=run
 
-		if result is not None:
-			path_result=(path,result)
-			if not stream_results: results+=[path_result]
-			if cache_writer: cache_writer.write(path_result)
-		#################################################
-		print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
-	if cache_writer: cache_writer.close()
+			try:
+				result=stone(path,*sling_args,**sling_kwargs2)
+			except TypeError:
+				result=stone(path,*sling_args,**sling_kwargs)
+
+			if result is not None:
+				path_result=(path,result)
+				if not stream_results: results+=[path_result]
+				#if cache_writer:
+				if cache_writer:
+					#cache_writer.write(path_result) # when using jsonlines
+					jsonl=json.dumps(path_result)
+					cache_writer.write(jsonl + '\n')
+			#################################################
+			print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
+	#if cache_writer: cache_writer.close()
 
 	# Gather the results
 	RESULTS = comm.gather(results, root=0)
@@ -121,7 +130,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 
 			# Save JSON
 			results_fnfn_json = os.path.join(results_dir,'results.jsonl')
-			save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
+			#save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
 
 			# Stream-save TSV
 			results_fnfn_txt = os.path.join(results_dir,'results.txt')
