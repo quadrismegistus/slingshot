@@ -112,13 +112,13 @@ If we hit enter the rest of the way, this is what will happen:
 
 #### results.jsonl
 
-We should now also have two results files in the folder: results.jsonl, in the [JSON lines format](http://jsonlines.org/), file which looks like this:
+We should now also have two results files in the folder: results.jsonl, in the [JSON lines format](http://jsonlines.org/): one json object per line. The file looks like this:
 
 	["/...blah.../00022180.txt", {"count": 310725}]
 	["/...blah.../00004615.txt", {"count": 70321}]
 	["/...blah.../00021819.txt", {"count": 88483}]
 	
-One object per line. That object is a list of [(path),(data returned from slingshot)].
+Each line is a two-item list: [ {path} , {data returned from slingshot} ].
 
 #### results.txt
 
