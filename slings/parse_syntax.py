@@ -31,7 +31,9 @@ def parse_path(path):
 import time
 def parse(txt,max_len=MAX_LEN):
 	txt=txt.replace('\r\n','\n').replace('\r','\n')
+	txt=txt.replace('@ @ @ @ @ @ @ @ @ @','\n\n') # hack for COHA
 	paras=txt.split('\n\n')
+
 	#doc=nlp(txt)
 	now=time.time()
 	num_tokens=0
