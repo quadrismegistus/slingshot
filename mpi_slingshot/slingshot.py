@@ -104,8 +104,11 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 				#if cache_writer:
 				if cache_writer:
 					#cache_writer.write(path_result) # when using jsonlines
-					jsonl=json.dumps(path_result)
-					cache_writer.write(jsonl + '\n')
+					try:
+						jsonl=json.dumps(path_result)
+						cache_writer.write(jsonl + '\n')
+					except:
+						print "!! could not write to results file!"
 			#################################################
 			print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
 	#if cache_writer: cache_writer.close()
