@@ -160,9 +160,12 @@ def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 	iterator=generator(*args,**kwargs)
 	first=iterator.next()
 	if not header: header=sorted(first.keys())
-	with open(fnfn, 'w') as csvfile:
+	with open(fnfn, 'w') as csvfile: # , encoding='utf-8', errors='ignore')
 		writer = csv.DictWriter(csvfile,fieldnames=header,delimiter='\t')
 		writer.writeheader()
 		for i,dx in enumerate(iterator):
+			for k,v in dx.items():
+				dx[k]=unicode(v).encode('utf-8',errors='ignore')
 			writer.writerow(dx)
 	print '>> saved:',fnfn
+	
