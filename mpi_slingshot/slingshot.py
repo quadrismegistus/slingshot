@@ -113,7 +113,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
-	RESULTS = comm.gather(results, root=0)
+	#RESULTS = comm.gather(results, root=0)
 
 	# If I am the seed process again
 	if rank == 0:
@@ -131,8 +131,8 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 			save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,all_paths,path_source)
 
 			# Save JSON
-			results_fnfn_json = os.path.join(results_dir,'results.jsonl')
-			save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
+			#results_fnfn_json = os.path.join(results_dir,'results.jsonl')
+			#save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
 
 			# Stream-save TSV
 			results_fnfn_txt = os.path.join(results_dir,'results.txt')
