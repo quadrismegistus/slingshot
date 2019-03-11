@@ -85,32 +85,32 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	zlen_rank=len(str(size))
 
 	with codecs.open(results_fnfn_json, 'a', encoding='utf-8') as cache_writer:
-	for i,(path,run) in enumerate(paths):
-		#################################################
-		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
+		for i,(path,run) in enumerate(paths):
+			#################################################
+			# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
-		sling_kwargs2=dict(sling_kwargs.items())
-		sling_kwargs2['results_dir']=results_dir
-		if num_runs>1: sling_kwargs2['run']=run
+			sling_kwargs2=dict(sling_kwargs.items())
+			sling_kwargs2['results_dir']=results_dir
+			if num_runs>1: sling_kwargs2['run']=run
 
-		try:
-			result=stone(path,*sling_args,**sling_kwargs2)
-		except TypeError:
-			result=stone(path,*sling_args,**sling_kwargs)
+			try:
+				result=stone(path,*sling_args,**sling_kwargs2)
+			except TypeError:
+				result=stone(path,*sling_args,**sling_kwargs)
 
-		if result is not None:
-			path_result=(path,result)
-			if not stream_results: results+=[path_result]
-			#if cache_writer:
-			if cache_writer:
-				#cache_writer.write(path_result) # when using jsonlines
-				#try:
-				jsonl=json.dumps(path_result)
-				cache_writer.write(jsonl + '\n')
-				#except:
-				#	print "!! could not write to results file!"
-		#################################################
-		print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
+			if result is not None:
+				path_result=(path,result)
+				if not stream_results: results+=[path_result]
+				#if cache_writer:
+				if cache_writer:
+					#cache_writer.write(path_result) # when using jsonlines
+					#try:
+					jsonl=json.dumps(path_result)
+					cache_writer.write(jsonl + '\n')
+					#except:
+					#	print "!! could not write to results file!"
+			#################################################
+			print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
