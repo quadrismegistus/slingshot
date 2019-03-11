@@ -23,6 +23,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-sling',help="Path to the python or R file of code (ending in .py or .R)")
 	parser.add_argument('-stone',help='The name of the function in the code that takes a string filepath')
+
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-pathkey',help='If text file given is a TSV, which column is the path located under?',default='')
 	parser.add_argument('-pathprefix',help='If applicable, type a prefix for all paths on pathlist (eg: /path/to/folder)',default='')
@@ -30,6 +31,7 @@ if __name__ == '__main__':
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
+	parser.add_argument('-oneshot',help='Just pass the `path` to the function (useful for postprocessing in sbatch)',action='store_true')
 
 	parser.add_argument('-kwargs',help='Keyword arguments to sling (use JSON syntax)',default='')
 
@@ -76,6 +78,9 @@ if __name__ == '__main__':
 		sys.exit(1)
 
 	Scmd = 'slingshot -sling {sling} -stone {stone}'.format(sling=args.sling, stone=args.stone)
+	if args.oneshot:
+		args.parallel=1
+		args.nosave=True
 
 	# Construct Goliath
 	path_ext=None
@@ -119,13 +124,15 @@ if __name__ == '__main__':
 
 	#other_args=[limit,savedir,tocache,tosave,args.mfw]
 	if limit: Scmd+=' -limit %s' % limit
-	if savedir: Scmd+=' -savedir %s' % savedir
+	if tosave and savedir: Scmd+=' -savedir %s' % savedir
 	if not tocache: Scmd+=' -nocache'
 	if not tosave: Scmd+=' -nosave'
+	if args.oneshot: Scmd+=' -oneshot'
+
 	if args.mfw and args.mfw!=parser.get_default('mfw'): Scmd+=' -mfw %s' % args.mfw
 
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns})" """.format(
+	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns})" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
@@ -138,11 +145,12 @@ if __name__ == '__main__':
 		cache=tocache,
 		tosave=tosave,
 		mfw=args.mfw,
-		numruns=args.numruns
+		numruns=args.numruns,
+		oneshot=args.oneshot
 	)
 
 
-	if not args.debug:
+	if not args.debug and args.parallel>1:
 		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else ' '
 		command = 'mpirun'+mpi_opts+command
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')

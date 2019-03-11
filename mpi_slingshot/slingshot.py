@@ -15,7 +15,11 @@ if not PATH_KEY: PATH_KEY=DEFAULT_PATH_KEY
 if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
 
-def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1):
+
+def slingshot_single_shot(stone,path):
+	return stone(path)
+
+def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False):
 	"""
 	Main function
 	"""
@@ -23,15 +27,20 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	# Load code-sling and stone-function
 	if not stone:
 		stone=load_stone_in_sling(path_sling,stone_name)
+		if not stone:
+			return
 
 	# Load paths
+	if oneshot:
+		return stone(path_source)
+
 	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
 
 	# Multiply paths by runs
 	all_paths = [(path,run+1) for path in all_paths for run in range(num_runs)]
 
 	# Break if these weren't returned
-	if not stone or not all_paths:
+	if not all_paths:
 		#print '!!',[path_sling,stone_name,path_source,path_ext]
 		return
 
@@ -136,7 +145,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 
 			# Stream-save TSV
 			results_fnfn_txt = os.path.join(results_dir,'results.txt')
-			if save_txt: save_results_txt(results_fnfn_txt,results_fnfn_json,txt_maxcols)
+			if save_txt: save_results_txt(results_fnfn_txt,cache_path,txt_maxcols)
 
 		# Exit
 		t4 = dt.now()
@@ -319,19 +328,19 @@ def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):
 
 
 
-def save_results_txt(results_fnfn_txt,results_fnfn_json,txt_maxcols):
+def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols):
 	now=time.time()
 
 	# First find KEYS
 	KEYS=set()
 	if txt_maxcols: Count=Counter()
-	with jsonlines.open(results_fnfn_json) as reader:
-		for path,result in reader.iter(skip_invalid=True):
-			if hasattr(result,'keys'):
-				if txt_maxcols:
-					Count.update(result.keys())
-				else:
-					KEYS=set(result.keys())
+
+	for path,result in stream_results(path_cache):
+		if hasattr(result,'keys'):
+			if txt_maxcols:
+				Count.update(result.keys())
+			else:
+				KEYS=set(result.keys())
 	if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
 
 	then,now=now,time.time()
@@ -341,9 +350,10 @@ def save_results_txt(results_fnfn_txt,results_fnfn_json,txt_maxcols):
 	if KEYS:
 		# Then loop again to write
 		header=['_path']+sorted([unicode(x) for x in KEYS])
-		with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt, jsonlines.open(results_fnfn_json) as reader:
+		with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:#, jsonlines.open(results_fnfn_json) as reader:
 			results_f_txt.write('\t'.join(header) + '\n')
-			for path,result in reader.iter(skip_invalid=True):
+			#for path,result in reader.iter(skip_invalid=True):
+			for path,result in stream_results(path_cache):
 				result['_path']=path
 				orow=[unicode(result.get(h,'')) for h in header]
 				results_f_txt.write('\t'.join(orow) + '\n')
@@ -383,6 +393,8 @@ def stream_results_json(path_cache,ext='.json'):
 					continue
 				yield (path,data)
 
+
+
 def stream_results(path_cache,ext='.jsonl'):
 	if 'jsonl' in os.path.basename(path_cache).split('.'):
 		for path,data in stream_jsonl:
@@ -396,12 +408,17 @@ def stream_results(path_cache,ext='.jsonl'):
 				#if '.ipynb' in path: continue
 				yield (path,data)
 
-def stream_jsonl(fn):
-	import json_lines
-	with json_lines.open(fn) as reader:
-		for x in reader:
-			yield x
+# def stream_jsonl(fn):
+# 	import json_lines
+# 	with json_lines.open(fn) as reader:
+# 		for x in reader:
+# 			yield x
 
+def stream_jsonl(fn):
+	import codecs,ujson as json
+	with open(fn) as f:
+		for ln in f:
+			yield json.loads(ln)
 
 def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 	if 'jsonl' in fnfn.split('.'): return writegen_jsonl(fnfn,generator,args=args,kwargs=kwargs)
