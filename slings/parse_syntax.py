@@ -92,16 +92,17 @@ def postprocess_iter(results_jsonl_fn,only_words=set(),only_pos=set(),only_rels=
 		sent_ld=[]
 		num_sent=0
 		fn=os.path.split(path)[-1]
+		odx=None
 		for dx in data:
+			wnum+=1
+			dx['_i']=wnum
+			if not wnum%10000: print '>>',wnum,ipath,path,odx,'...'
 			if sent_ld and dx['sent_start']!=sent_ld[-1]['sent_start']:
 				old=postprocess_sentence(sent_ld,only_words=only_words,only_pos=only_pos,only_rels=only_rels,lemma=lemma)
 				num_sent+=1
 				for odx in old:
-					wnum+=1
-					odx['_i']=wnum
 					odx['num_sent']=num_sent
 					odx['fn']=fn
-					if not wnum%1000: print '>>',ipath,path,odx,'...'
 					yield odx
 					sent_ld=[]
 			sent_ld+=[dx]
@@ -130,7 +131,7 @@ def postprocess_sentence(sent_ld,only_words=set(),only_pos=set(),only_rels=set()
 		if only_words and not word in only_words: continue
 		if only_pos and not pos in only_pos: continue
 		if only_rels and not rel in only_rels: continue
-		word_dx={'head':head,'word':word,'rel':rel}
+		word_dx={'head':head,'word':word,'rel':rel, '_i':dx['_i']}
 		old+=[word_dx]
 	return old
 
