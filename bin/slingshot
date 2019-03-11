@@ -90,7 +90,7 @@ if __name__ == '__main__':
 		print "error: neither -pathlist PATHLIST nor -path PATH specified"
 		parser.print_help()
 		sys.exit(1)
-	if args.pathkey: Scmd+=' -pathkey "%s"' % args.pathsuffix
+	if args.pathkey: Scmd+=' -pathkey "%s"' % args.pathkey
 	if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
 	if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
 	if args.sbatch_args: Scmd+=' -sbatch_args "%s"' % args.sbatch_args
