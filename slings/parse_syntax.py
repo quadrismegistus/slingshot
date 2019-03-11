@@ -83,6 +83,9 @@ def postprocess_iter(results_jsonl_fn,only_words=set(),only_pos=set(),only_rels=
 	import pandas as pd,os
 	from mpi_slingshot import stream_results
 	wnum=-1
+	if only_words: only_words=set(only_words)
+	if only_pos: only_pos=set(only_pos)
+	if only_rels: only_rels=set(only_rels)
 	for ipath,(path,data) in enumerate(stream_results(results_jsonl_fn)):
 		if limit and ipath>=limit: break
 		if '.ipynb' in path: continue
