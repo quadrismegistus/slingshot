@@ -87,6 +87,7 @@ def postprocess_iter(results_jsonl_fn,only_words=set(),only_pos=set(),only_rels=
 	if only_pos: only_pos=set(only_pos)
 	if only_rels: only_rels=set(only_rels)
 	for ipath,(path,data) in enumerate(stream_results(results_jsonl_fn)):
+		if not ipath%1000: print '>>',ipath,path,'...'
 		if limit and ipath>=limit: break
 		if '.ipynb' in path: continue
 		sent_ld=[]
