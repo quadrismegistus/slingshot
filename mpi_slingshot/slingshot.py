@@ -19,7 +19,7 @@ if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False):
 	"""
 	Main function
 	"""
@@ -32,7 +32,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 
 	# Load paths
 	if oneshot:
-		return stone(path_source)
+		return stone(path_source,*sling_args,**sling_kwargs)
 
 	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
 
@@ -100,6 +100,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 		sling_kwargs2=dict(sling_kwargs.items())
 		sling_kwargs2['results_dir']=results_dir
 		if num_runs>1: sling_kwargs2['run']=run
+		print sling_kwargs2
 
 		try:
 			result=stone(path,*sling_args,**sling_kwargs2)

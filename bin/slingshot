@@ -23,6 +23,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-sling',help="Path to the python or R file of code (ending in .py or .R)")
 	parser.add_argument('-stone',help='The name of the function in the code that takes a string filepath')
+	parser.add_argument('-stone_args',help='Any other arguments for the stone function? (JSON)',default='')
 
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-pathkey',help='If text file given is a TSV, which column is the path located under?',default='')
@@ -128,11 +129,22 @@ if __name__ == '__main__':
 	if not tocache: Scmd+=' -nocache'
 	if not tosave: Scmd+=' -nosave'
 	if args.oneshot: Scmd+=' -oneshot'
-
 	if args.mfw and args.mfw!=parser.get_default('mfw'): Scmd+=' -mfw %s' % args.mfw
 
+	#sling_args=[]
+	sling_kwargs={}
+	if args.stone_args:
+		import ujson as json
+		stone_args=json.loads(args.stone_args)
+		#if type(stone_args) in [list,tuple,set]:
+		#	sling_args+=stone_args
+		if type(stone_args) in {dict}:
+			for k,v in stone_args.items():
+				sling_kwargs[k]=v
+
+	
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns})" """.format(
+	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns})" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
@@ -146,7 +158,10 @@ if __name__ == '__main__':
 		tosave=tosave,
 		mfw=args.mfw,
 		numruns=args.numruns,
-		oneshot=args.oneshot
+		oneshot=args.oneshot,
+		stone_args_json=stone_args,
+		sling_kwargs=sling_kwargs,
+		#sling_args=sling_args
 	)
 
 
