@@ -64,6 +64,57 @@ def parse(txt,max_len=MAX_LEN):
 	rate=num_tokens/duration
 	print '>> FINISHED PROCESSING IN %s seconds (%s wps)' % (round(duration,1),rate)
 
+
+def postprocess(results_jsonl_fn,words=set(),only_pos=set(),only_rel=set(),lemma=True):
+	import pandas as pd,os
+	from mpi_slingshot import stream_results
+	wnum=-1
+	for path,data in enumerate(stream_results(fn)):
+		if '.ipynb' in path: continue
+		sent_ld=[]
+		num_sent=0
+		fn=os.path.split(path)[-1]
+		for dx in data:
+			wnum+=1
+			if sent_ld and dx['sent_start']!=sent_ld[-1]['sent_start']:
+				old=postprocess_sentence(sent_ld,pos_only=only_pos,lemma=lemma)
+				num_sent+=1
+				for odx in old:
+					odx['_i']=wnum
+					odx['num_sent']=num_sent
+					odx['fn']=fn
+					yield odx
+					sent_ld=[]
+			sent_ld+=[dx]
+
+
+def postprocess_sentence(sent_ld,pos_only={},lemma=False):
+	"""
+	Modifiers
+	Nouns possessed by characters: poss
+	Adjectives modifying characters:
+	Verbs of which character is a subject
+	Verbs of which character is an object
+
+	rels = {'poss':'Possessive',
+		   'nsubj':'Subject',
+		   'dobj':'Object',
+		   'amod':'Modifier'}
+	"""
+
+	old=[]
+	for dx in sent_ld:
+		word=dx['lemma'] if lemma else dx['word']
+		rel=dx['dep']
+		head=dx['head_lemma'] if lemma else dx['head']
+		pos=dx['pos']
+		word,head=word.lower(),head.lower()
+		if not word in all_words or not pos in pos_only: continue
+		word_dx={'head':head,'word':word,'rel':rel}
+		old+=[word_dx]
+	return old
+
+
 """
 Appendices
 """

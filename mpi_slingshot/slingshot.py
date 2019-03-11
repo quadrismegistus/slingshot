@@ -69,12 +69,12 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	paths = segment
 
 	# cache results?
-	#cache_writer=None
-	#if cache_results and cache_path:
-	#	cache_fn = 'results.rank=%s.jsonl' % str(rank).zfill(4)
-	#	cache_fnfn = os.path.join(cache_path,cache_fn)
-	#	cache_writer=codecs.open(cache_fnfn, mode='w',encoding='utf-8')
-	results_fnfn_json = os.path.join(results_dir,'results.jsonl')
+	cache_writer=None
+	if cache_results and cache_path:
+		cache_fn = 'results.rank=%s.jsonl' % str(rank).zfill(4)
+		cache_fnfn = os.path.join(cache_path,cache_fn)
+		cache_writer=codecs.open(cache_fnfn, mode='w',encoding='utf-8')
+
 
 
 	# let's go! loop over the paths
@@ -85,33 +85,33 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 	zlen_rank=len(str(size))
 
 	with codecs.open(results_fnfn_json, 'a', encoding='utf-8') as cache_writer:
-		for i,(path,run) in enumerate(paths):
-			#################################################
-			# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
+	for i,(path,run) in enumerate(paths):
+		#################################################
+		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
-			sling_kwargs2=dict(sling_kwargs.items())
-			sling_kwargs2['results_dir']=results_dir
-			if num_runs>1: sling_kwargs2['run']=run
+		sling_kwargs2=dict(sling_kwargs.items())
+		sling_kwargs2['results_dir']=results_dir
+		if num_runs>1: sling_kwargs2['run']=run
 
-			try:
-				result=stone(path,*sling_args,**sling_kwargs2)
-			except TypeError:
-				result=stone(path,*sling_args,**sling_kwargs)
+		try:
+			result=stone(path,*sling_args,**sling_kwargs2)
+		except TypeError:
+			result=stone(path,*sling_args,**sling_kwargs)
 
-			if result is not None:
-				path_result=(path,result)
-				if not stream_results: results+=[path_result]
-				#if cache_writer:
-				if cache_writer:
-					#cache_writer.write(path_result) # when using jsonlines
-					#try:
-					jsonl=json.dumps(path_result)
-					cache_writer.write(jsonl + '\n')
-					#except:
-					#	print "!! could not write to results file!"
-			#################################################
-			print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
-	#if cache_writer: cache_writer.close()
+		if result is not None:
+			path_result=(path,result)
+			if not stream_results: results+=[path_result]
+			#if cache_writer:
+			if cache_writer:
+				#cache_writer.write(path_result) # when using jsonlines
+				#try:
+				jsonl=json.dumps(path_result)
+				cache_writer.write(jsonl + '\n')
+				#except:
+				#	print "!! could not write to results file!"
+		#################################################
+		print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
+	if cache_writer: cache_writer.close()
 
 	# Gather the results
 	RESULTS = comm.gather(results, root=0)
@@ -133,7 +133,7 @@ def slingshot(path_sling=None,stone_name=None,paths=None,limit=None,path_source=
 
 			# Save JSON
 			results_fnfn_json = os.path.join(results_dir,'results.jsonl')
-			#save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
+			save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
 
 			# Stream-save TSV
 			results_fnfn_txt = os.path.join(results_dir,'results.txt')
@@ -266,6 +266,20 @@ def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_p
 	return paths
 
 
+
+
+
+def save_results_jsonl(results_fnfn,cache_results,cache_path,stream_results):
+	if cache_results and cache_path and stream_results:
+		with codecs.open(results_fn, 'w', encoding='utf-8') as of:
+			for fn_c in sorted(os.listdir(cache_path)):
+				if not fn_c.endswith('.jsonl'): continue
+				fnfn_c=os.path.join(cache_path,fn_c)
+				with codecs.open(fnfn_c,encoding='utf-8') as f_c:
+					for line in f_c:
+						of.write(line)
+
+
 def save_results_json(results_fnfn,cache_results,cache_path,stream_results):
 	if cache_results and cache_path and stream_results:
 		with codecs.open(results_fnfn,'w',encoding='utf-8') as results_f:
@@ -281,7 +295,6 @@ def save_results_json(results_fnfn,cache_results,cache_path,stream_results):
 		with codecs.open(results_fnfn,'wb') as results_f:
 			json.dump(RESULTS,results_f)
 	print '>> saved:',results_fnfn
-
 
 def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):
 	if cache_results and cache_path and stream_results:
@@ -372,9 +385,30 @@ def stream_results_json(path_cache,ext='.json'):
 				yield (path,data)
 
 def stream_results(path_cache,ext='.jsonl'):
-	for fn in os.listdir(path_cache):
-		if not fn.endswith(ext): continue
-		fnfn=os.path.join(path_cache,fn)
-		with jsonlines.open(fnfn) as reader:
-			for path,data in enumerate(f.iter(skip_invalid=True)):
+	if 'jsonl' in os.path.basename(path_cache).split('.'):
+		for path,data in stream_jsonl:
+			#if '.ipynb' in path: continue
+			yield (path,data)
+	else:
+		for fn in os.listdir(path_cache):
+			if not fn.endswith(ext): continue
+			fnfn=os.path.join(path_cache,fn)
+			for path,data in stream_jsonl(fnfn):
+				#if '.ipynb' in path: continue
 				yield (path,data)
+
+def stream_jsonl(fn):
+	import json_lines
+	with json_lines.open(fn) as reader:
+		for x in reader:
+			yield x
+
+
+def writegen(fnfn,generator,header=None,args=[],kwargs={}):
+	if 'jsonl' in fnfn.split('.'): return writegen_jsonl(fnfn,generator,args=args,kwargs=kwargs)
+	with codecs.open(fnfn,'w',encoding='utf-8') as of:
+		for i,dx in enumerate():
+			if not header: header=sorted(dx.keys())
+			if not i: of.write('\t'.join(header) + '\n')
+			of.write('\t'.join([unicode(dx.get(h,'')) for h in header]) + '\n')
+	print '>> saved:',fnfn
