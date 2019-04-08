@@ -2,7 +2,7 @@
 # Syntax parsing slingshot functions with spacy
 
 # set stones aside for sling
-STONES = ['parse_path', 'postprocess']
+STONES = ['parse_path', 'postprocess','save_as_individual_text_csvs']
 MAX_LEN = 1000000 # spacy
 
 # imports
@@ -68,6 +68,65 @@ def parse(txt,max_len=MAX_LEN):
 
 
 #Postprocess
+
+def iterate_syntax(results_cache_dir_or_jsonl_file):
+	import os
+	from mpi_slingshot import stream_results_json
+
+	I=0
+	for path,data in stream_results_json(results_cache_dir_or_jsonl_file):
+		if '.ipynb' in path: continue
+		#fn=os.path.split(path)[-1]
+		for dx in data:
+			if not I%100000: print '>>',I,'...'
+			dx['_i']=I
+			dx['_path']=path
+			I+=1
+			yield dx
+
+def save_as_individual_text_csvs(results_cache_dir_or_jsonl_file,odir=None):
+	import codecs,csv,pandas as pd
+	from llp import tools
+	of=None
+	path_now=None
+	if not odir: odir='results_postprocess_individual_csv'
+	old=[]
+	for dx in iterate_syntax(results_cache_dir_or_jsonl_file):
+		if path_now!=dx['_path']:
+			#opath=dx['_path'] if not dx['_path'].startswith('/') else dx['_path'][1:]
+			if path_now:
+				opath=path_now
+				opath=opath if not opath.startswith('/') else opath[1:]
+				opath_full = os.path.join(odir,os.path.split(opath)[0])
+				if not os.path.exists(opath_full): os.makedirs(opath_full)
+				ofn=os.path.splitext(os.path.basename(path_now))[0] + '.txt'
+				ofnfn=os.path.join(opath_full, ofn)
+				#if of: of.close()
+				#of=codecs.open(ofnfn,'w',encoding='utf-8')
+				#of=open(ofnfn,'w')
+				#header=sorted(dx.keys())
+				#header.remove('_path')
+				#writer=csv.DictWriter(of,fieldnames=header,delimiter='\t')
+				#writer.writeheader()
+				#tools.write2(ofnfn,old)
+				#print ofnfn,len(old)
+				for d in old:
+					for k,v in d.items():
+						d[k]=unicode(v).replace('\r\n',"\\n").replace('\r','\\n').replace('\n','\\n')
+				#pd.DataFrame(old).to_csv(ofnfn,sep='\t',encoding='utf-8')
+				tools.write(ofnfn,old,toprint=True)
+				#print '>> saved:',ofnfn
+			old=[]
+			path_now=dx['_path']
+
+		del dx['_path']
+		old+=[dx]
+
+		#writer.writerow(dx)
+	#of.close()
+
+
+
 
 def postprocess(results_cache_dir_or_jsonl_file,only_words=set(),only_pos=set(),only_rels=set(),lemma=False,output_fn=None,limit=None):
 	if not output_fn:
@@ -168,4 +227,3 @@ def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 				dx[k]=unicode(v).encode('utf-8',errors='ignore')
 			writer.writerow(dx)
 	print '>> saved:',fnfn
-	

@@ -30,6 +30,10 @@ if __name__ == '__main__':
 	parser.add_argument('-pathprefix',help='If applicable, type a prefix for all paths on pathlist (eg: /path/to/folder)',default='')
 	parser.add_argument('-pathsuffix',help='If applicable, type a suffix for all paths on pathlist (eg: .txt)',default='')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
+
+	parser.add_argument('-llp_corpus',help='Specify a corpus name (requires Literary Language Processing module)')
+
+
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
 	parser.add_argument('-oneshot',help='Just pass the `path` to the function (useful for postprocessing in sbatch)',action='store_true')
@@ -134,6 +138,7 @@ if __name__ == '__main__':
 
 	#sling_args=[]
 	sling_kwargs={}
+	stone_args=None
 	if args.stone_args:
 		import ujson as json
 		stone_args=json.loads(args.stone_args)

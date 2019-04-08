@@ -379,9 +379,10 @@ def rconvert(robj):
 ### Loading results
 def stream_results_json(path_cache,ext='.json'):
 	import ujson as json
-	for fn in os.listdir(path_cache):
+	for fn in sorted(os.listdir(path_cache)):
 		if not fn.endswith(ext): continue
 		fnfn=os.path.join(path_cache,fn)
+		print '>> streaming:',fnfn,'...'
 		with open(fnfn) as f:
 			for i,ln in enumerate(f):
 				line=ln[:-2]
@@ -402,9 +403,10 @@ def stream_results(path_cache,ext='.jsonl'):
 			#if '.ipynb' in path: continue
 			yield (path,data)
 	else:
-		for fn in os.listdir(path_cache):
+		for fn in sorted(os.listdir(path_cache)):
 			if not fn.endswith(ext): continue
 			fnfn=os.path.join(path_cache,fn)
+			print '>> streaming:',fnfn,'...'
 			for path,data in stream_jsonl(fnfn):
 				#if '.ipynb' in path: continue
 				yield (path,data)
