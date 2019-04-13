@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
+import six
+from six.moves import zip
 # coding: utf-8
 # Syntax parsing slingshot functions with spacy
 
@@ -22,7 +26,7 @@ Principal functions
 
 def path2txt(path):
 	with xopen(path) as f:
-		return f.read().decode('utf-8')
+		return f.read()#.decode('utf-8')
 
 def parse_path(path):
 	return list(parse(path2txt(path)))
@@ -38,7 +42,7 @@ def parse(txt,max_len=MAX_LEN):
 	now=time.time()
 	num_tokens=0
 	for pi,para in enumerate(paras):
-		if not pi%10: print '>>',pi,'...'
+		#if not pi%10: print('>>',pi,'...')
 		para=para.strip()
 		if len(para)>max_len: continue
 		doc=nlp(para)
@@ -62,7 +66,7 @@ def parse(txt,max_len=MAX_LEN):
 	nownow=time.time()
 	duration=nownow-now
 	rate=num_tokens/duration
-	print '>> FINISHED PROCESSING IN %s seconds (%s wps)' % (round(duration,1),rate)
+	print('>> FINISHED PROCESSING IN %s seconds (%s wps)' % (round(duration,1),rate))
 
 
 
@@ -78,7 +82,7 @@ def iterate_syntax(results_cache_dir_or_jsonl_file):
 		if '.ipynb' in path: continue
 		#fn=os.path.split(path)[-1]
 		for dx in data:
-			if not I%100000: print '>>',I,'...'
+			if not I%100000: print('>>',I,'...')
 			dx['_i']=I
 			dx['_path']=path
 			I+=1
@@ -111,8 +115,8 @@ def save_as_individual_text_csvs(results_cache_dir_or_jsonl_file,odir=None):
 				#tools.write2(ofnfn,old)
 				#print ofnfn,len(old)
 				for d in old:
-					for k,v in d.items():
-						d[k]=unicode(v).replace('\r\n',"\\n").replace('\r','\\n').replace('\n','\\n')
+					for k,v in list(d.items()):
+						d[k]=six.text_type(v).replace('\r\n',"\\n").replace('\r','\\n').replace('\n','\\n')
 				#pd.DataFrame(old).to_csv(ofnfn,sep='\t',encoding='utf-8')
 				tools.write(ofnfn,old,toprint=True)
 				#print '>> saved:',ofnfn
@@ -135,7 +139,7 @@ def postprocess(results_cache_dir_or_jsonl_file,only_words=set(),only_pos=set(),
 		else:
 			output_folder=os.path.abspath(os.path.join(results_cache_dir_or_jsonl_file,'..'))
 			output_fn=os.path.join(output_folder,'results.postprocessed.txt')
-	kwargs=dict(zip(['only_words','only_pos','only_rels','lemma','limit'], [only_words,only_pos,only_rels,lemma,limit]))
+	kwargs=dict(list(zip(['only_words','only_pos','only_rels','lemma','limit'], [only_words,only_pos,only_rels,lemma,limit])))
 	writegen(output_fn,postprocess_iter,args=[results_cache_dir_or_jsonl_file],kwargs=kwargs)
 
 def postprocess_iter(results_jsonl_fn,only_words=set(),only_pos=set(),only_rels=set(),lemma=False,limit=None):
@@ -155,7 +159,7 @@ def postprocess_iter(results_jsonl_fn,only_words=set(),only_pos=set(),only_rels=
 		for dx in data:
 			wnum+=1
 			dx['_i']=wnum
-			if not wnum%10000: print '>>',wnum,ipath,path,odx,'...'
+			if not wnum%10000: print('>>',wnum,ipath,path,odx,'...')
 			if sent_ld and dx['sent_start']!=sent_ld[-1]['sent_start']:
 				old=postprocess_sentence(sent_ld,only_words=only_words,only_pos=only_pos,only_rels=only_rels,lemma=lemma)
 				num_sent+=1
@@ -217,13 +221,13 @@ def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 	import codecs,csv
 	if 'jsonl' in fnfn.split('.'): return writegen_jsonl(fnfn,generator,args=args,kwargs=kwargs)
 	iterator=generator(*args,**kwargs)
-	first=iterator.next()
+	first=next(iterator)
 	if not header: header=sorted(first.keys())
 	with open(fnfn, 'w') as csvfile: # , encoding='utf-8', errors='ignore')
 		writer = csv.DictWriter(csvfile,fieldnames=header,delimiter='\t')
 		writer.writeheader()
 		for i,dx in enumerate(iterator):
-			for k,v in dx.items():
-				dx[k]=unicode(v).encode('utf-8',errors='ignore')
+			for k,v in list(dx.items()):
+				dx[k]=six.text_type(v).encode('utf-8',errors='ignore')
 			writer.writerow(dx)
-	print '>> saved:',fnfn
+	print('>> saved:',fnfn)

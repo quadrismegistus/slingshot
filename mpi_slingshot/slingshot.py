@@ -1,10 +1,16 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import os,sys,codecs,numpy as np,random,imp,time,random
-import jsonlines
-import ujson as json
+try:
+	import ujson as json
+except ImportError:
+	import json
 from datetime import datetime as dt
 import unicodecsv as csv
 from collections import defaultdict,Counter
 from .config import CONFIG
+import six
+from six.moves import range
 DEFAULT_PATH_KEY='_path'
 DEFAULT_EXT = 'txt'
 
@@ -19,7 +25,7 @@ if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False):
 	"""
 	Main function
 	"""
@@ -34,7 +40,18 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=N
 	if oneshot:
 		return stone(path_source,*sling_args,**sling_kwargs)
 
-	all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
+
+	all_paths = None
+	if llp_corpus:
+		try:
+			import llp
+			corpus = llp.load_corpus(llp_corpus)
+			all_paths = [text.path_txt for text in corpus.texts()]
+		except ImportError:
+			pass
+
+	if not all_paths:
+		all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
 
 	# Multiply paths by runs
 	all_paths = [(path,run+1) for path in all_paths for run in range(num_runs)]
@@ -55,7 +72,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=N
 	comm = MPI.COMM_WORLD
 	size = comm.Get_size()
 	rank = comm.Get_rank()
-	print '>> SLINGSHOT: initializing MPI with size %s and rank %s' % (size,rank)
+	print('>> SLINGSHOT: initializing MPI with size %s and rank %s' % (size,rank))
 
 
 	# Am I the seed process?
@@ -65,7 +82,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=N
 
 		# Farm out paths to other processes
 		segments = np.array_split(all_paths,size) if size>1 else [all_paths]
-		print '>> SLINGSHOT: %s paths divided into %s segments' % (len(all_paths), len(segments))
+		print('>> SLINGSHOT: %s paths divided into %s segments' % (len(all_paths), len(segments)))
 
 	# Or am I a process created by the seed?
 	else:
@@ -97,10 +114,9 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=N
 		#################################################
 		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
-		sling_kwargs2=dict(sling_kwargs.items())
-		sling_kwargs2['results_dir']=results_dir
+		sling_kwargs2=dict(list(sling_kwargs.items()))
+		#sling_kwargs2['results_dir']=results_dir
 		if num_runs>1: sling_kwargs2['run']=run
-		print sling_kwargs2
 
 		try:
 			result=stone(path,*sling_args,**sling_kwargs2)
@@ -119,7 +135,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=N
 				#except:
 				#	print "!! could not write to results file!"
 		#################################################
-		print '>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths)
+		print('>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths))
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
@@ -128,7 +144,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=N
 	# If I am the seed process again
 	if rank == 0:
 		t3 = dt.now()
-		print '>> SLINGSHOT: Finished parsing in %s seconds.' % (t3-t1).total_seconds()
+		print('>> SLINGSHOT: Finished parsing in %s seconds.' % (t3-t1).total_seconds())
 
 		# Save results...
 		if save_results and results_dir:
@@ -150,7 +166,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,limit=N
 
 		# Exit
 		t4 = dt.now()
-		print '>> SLINGSHOT: Finished everything in %s seconds!' % (t4-t1).total_seconds()
+		print('>> SLINGSHOT: Finished everything in %s seconds!' % (t4-t1).total_seconds())
 
 
 
@@ -176,12 +192,12 @@ def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path
 
 def load_stone_in_sling(path_sling,stone_name):
 	if not path_sling or not stone_name:
-		print '!! sling or stone not specified'
+		print('!! sling or stone not specified')
 		return
 	if not os.path.exists(path_sling):
 		in_PATH_STRINGS=os.path.join(CONFIG['PATH_SLINGS'],path_sling)
 		if not os.path.exists(in_PATH_STRINGS):
-			print "!!",path,"does not exist"
+			print("!!",path,"does not exist")
 			return
 		path_sling=in_PATH_STRINGS
 	if path_sling.endswith('.py'):
@@ -268,7 +284,7 @@ def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_p
 	paths=paths[:limit]
 	#paths=[p for p in paths if os.path.exists(p)]
 	if not paths:
-		print '!! no paths given or found at %s' % path_source if path_source else ''
+		print('!! no paths given or found at %s' % path_source if path_source else '')
 		return
 	if shuffle_paths:
 		random.shuffle(paths)
@@ -303,7 +319,7 @@ def save_results_json(results_fnfn,cache_results,cache_path,stream_results):
 	else:
 		with codecs.open(results_fnfn,'wb') as results_f:
 			json.dump(RESULTS,results_f)
-	print '>> saved:',results_fnfn
+	print('>> saved:',results_fnfn)
 
 def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):
 	if cache_results and cache_path and stream_results:
@@ -325,7 +341,7 @@ def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):
 	else:
 		with codecs.open(results_fnfn,'wb') as results_f:
 			json.dump(RESULTS,results_f)
-	print '>> saved:',results_fnfn
+	print('>> saved:',results_fnfn)
 
 
 
@@ -339,28 +355,28 @@ def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols):
 	for path,result in stream_results(path_cache):
 		if hasattr(result,'keys'):
 			if txt_maxcols:
-				Count.update(result.keys())
+				Count.update(list(result.keys()))
 			else:
 				KEYS=set(result.keys())
 	if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
 
 	then,now=now,time.time()
-	print '>> save_txt: found keys in %ss' % int(now-then)
-	print KEYS
+	print('>> save_txt: found keys in %ss' % int(now-then))
+	print(KEYS)
 
 	if KEYS:
 		# Then loop again to write
-		header=['_path']+sorted([unicode(x) for x in KEYS])
+		header=['_path']+sorted([six.text_type(x) for x in KEYS])
 		with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:#, jsonlines.open(results_fnfn_json) as reader:
 			results_f_txt.write('\t'.join(header) + '\n')
 			#for path,result in reader.iter(skip_invalid=True):
 			for path,result in stream_results(path_cache):
 				result['_path']=path
-				orow=[unicode(result.get(h,'')) for h in header]
+				orow=[six.text_type(result.get(h,'')) for h in header]
 				results_f_txt.write('\t'.join(orow) + '\n')
-			print '>> saved:',results_fnfn_txt
+			print('>> saved:',results_fnfn_txt)
 			then,now=now,time.time()
-			print '>> save_txt: saved in %ss' % int(now-then)
+			print('>> save_txt: saved in %ss' % int(now-then))
 
 
 
@@ -370,7 +386,7 @@ def rconvert(robj):
 	try:
 		return { key : robj.rx2(key)[0] for key in robj.names }
 	except AttributeError:
-		print "!! forcing conversion for:",robj
+		print("!! forcing conversion for:",robj)
 		from rpy2.robjects import pandas2ri
 		pandas2ri.activate()
 		return pandas2ri.ri2py(robj)
@@ -382,7 +398,7 @@ def stream_results_json(path_cache,ext='.json'):
 	for fn in sorted(os.listdir(path_cache)):
 		if not fn.endswith(ext): continue
 		fnfn=os.path.join(path_cache,fn)
-		print '>> streaming:',fnfn,'...'
+		print('>> streaming:',fnfn,'...')
 		with open(fnfn) as f:
 			for i,ln in enumerate(f):
 				line=ln[:-2]
@@ -390,8 +406,8 @@ def stream_results_json(path_cache,ext='.json'):
 				try:
 					path,data=json.loads(line)
 				except ValueError as e:
-					print '!!',e
-					print "!!",line[:200]
+					print('!!',e)
+					print("!!",line[:200])
 					continue
 				yield (path,data)
 
@@ -406,7 +422,7 @@ def stream_results(path_cache,ext='.jsonl'):
 		for fn in sorted(os.listdir(path_cache)):
 			if not fn.endswith(ext): continue
 			fnfn=os.path.join(path_cache,fn)
-			print '>> streaming:',fnfn,'...'
+			print('>> streaming:',fnfn,'...')
 			for path,data in stream_jsonl(fnfn):
 				#if '.ipynb' in path: continue
 				yield (path,data)
@@ -429,5 +445,5 @@ def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 		for i,dx in enumerate():
 			if not header: header=sorted(dx.keys())
 			if not i: of.write('\t'.join(header) + '\n')
-			of.write('\t'.join([unicode(dx.get(h,'')) for h in header]) + '\n')
-	print '>> saved:',fnfn
+			of.write('\t'.join([six.text_type(dx.get(h,'')) for h in header]) + '\n')
+	print('>> saved:',fnfn)

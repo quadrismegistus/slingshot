@@ -1,4 +1,5 @@
-{import setuptools
+from __future__ import absolute_import
+import setuptools
 from setuptools import setup
 import os
 import sys

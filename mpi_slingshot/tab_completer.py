@@ -1,9 +1,12 @@
+from __future__ import absolute_import
+from __future__ import print_function
 ## SOURCE = https://gist.github.com/iamatypeofwalrus/5637895
 
 import os
 import sys
 import readline
 import glob
+from six.moves import input
 
 class tabCompleter(object):
     """
@@ -61,9 +64,9 @@ if __name__=="__main__":
 
     readline.set_completer(t.listCompleter)
 
-    ans = raw_input("Complete from list ")
-    print ans
+    ans = input("Complete from list ")
+    print(ans)
 
     readline.set_completer(t.pathCompleter)
-    ans = raw_input("What file do you want? ")
-    print ans
+    ans = input("What file do you want? ")
+    print(ans)

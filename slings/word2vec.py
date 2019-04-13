@@ -1,4 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import os,codecs
+from six.moves import range
 
 STONES = ['save_skipgrams_from_txt_paths','gen_word2vec_model_from_skipgrams']
 
@@ -26,7 +29,7 @@ def save_skipgrams_from_txt_paths(path_to_list_of_txt_paths,results_dir='./',ski
 			os.makedirs(output_path)
 		except OSError:
 			pass
-	print '>> saving skipgrams to',output_fnfn,'...'
+	print('>> saving skipgrams to',output_fnfn,'...')
 	with codecs.open(path_to_list_of_txt_paths,encoding='utf-8') as f, codecs.open(output_fnfn,'w',encoding='utf-8') as of:
 		for ln in f:
 			path_txt=ln.strip()
@@ -66,13 +69,13 @@ class SkipgramsSampler(object):
 
 	def get_num_lines(self):
 		then=time.time()
-		print '>> [SkipgramsSampler] counting lines in',self.fn
+		print('>> [SkipgramsSampler] counting lines in',self.fn)
 		with gzip.open(self.fn,'rb') as f:
 			for i,line in enumerate(f):
 				pass
 		num_lines=i+1
 		now=time.time()
-		print '>> [SkipgramsSampler] finished counting lines in',self.fn,'in',int(now-then),'seconds. # lines =',num_lines,'and num skips wanted =',self.num_skips_wanted
+		print('>> [SkipgramsSampler] finished counting lines in',self.fn,'in',int(now-then),'seconds. # lines =',num_lines,'and num skips wanted =',self.num_skips_wanted)
 		return num_lines
 
 	def __iter__(self):
@@ -118,5 +121,5 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir='./',ski
 
 	# Save model
 	model.wv.save_word2vec_format(ofnfn, ofnfn_vocab)
-	print ">> saved:",ofnfn
-	print ">> saved:",ofnfn_vocab
+	print(">> saved:",ofnfn)
+	print(">> saved:",ofnfn_vocab)

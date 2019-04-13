@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 ###################
 ### LEAVE THIS LINE
 CONFIG={} #########
@@ -17,7 +18,7 @@ except ImportError:
 	##
 
 ENV_PREFIX='SLINGSHOT_'
-for k,v in os.environ.items():
+for k,v in list(os.environ.items()):
 	if k.startswith(ENV_PREFIX):
 		key=k[len(ENV_PREFIX):]
 		CONFIG[key]=v

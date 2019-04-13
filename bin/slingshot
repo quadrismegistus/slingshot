@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 #encoding=utf-8
 
+from __future__ import absolute_import
+from __future__ import print_function
+
+
 import os,imp,argparse,sys
 
 def now(now=None,seconds=False):
@@ -15,7 +19,7 @@ def now(now=None,seconds=False):
 def has_minimal_info(args):
 	if not args.sling: return False
 	if not args.stone: return False
-	if not (args.pathlist or args.path): return False
+	if not (args.pathlist or args.path or args.llp_corpus): return False
 	return True
 
 if __name__ == '__main__':
@@ -76,9 +80,9 @@ if __name__ == '__main__':
 
 	# Load slingshot
 	if not args.sling or not args.stone:
-		if not args.sling: print "error: -sling SLING must be specified"
-		if not args.stone: print "error: -stone STONE must be specified"
-		print
+		if not args.sling: print("error: -sling SLING must be specified")
+		if not args.stone: print("error: -stone STONE must be specified")
+		print()
 		parser.print_help()
 		sys.exit(1)
 
@@ -89,21 +93,28 @@ if __name__ == '__main__':
 		args.nocache=True
 
 	# Construct Goliath
-	path_ext=None
-	if args.pathlist:
-		path_source = os.path.abspath(args.pathlist)
-		Scmd += ' -pathlist %s' % path_source
-	elif args.path:
-		path_source = os.path.abspath(args.path)
-		path_ext = args.ext if args.ext else None
-		Scmd += ' -path %s%s' % (path_source, ' -ext '+path_ext if path_ext else '')
+	if args.llp_corpus:
+		Scmd += ' -llp_corpus '+args.llp_corpus
+		path_source = ''
+		path_ext=''
 	else:
-		print "error: neither -pathlist PATHLIST nor -path PATH specified"
-		parser.print_help()
-		sys.exit(1)
-	if args.pathkey: Scmd+=' -pathkey "%s"' % args.pathkey
-	if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
-	if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
+		path_ext=None
+		if args.pathlist:
+			path_source = os.path.abspath(args.pathlist)
+			Scmd += ' -pathlist %s' % path_source
+		elif args.path:
+			path_source = os.path.abspath(args.path)
+			path_ext = args.ext if args.ext else None
+			Scmd += ' -path %s%s' % (path_source, ' -ext '+path_ext if path_ext else '')
+		else:
+			print("error: neither -pathlist PATHLIST nor -path PATH specified")
+			parser.print_help()
+			sys.exit(1)
+		if args.pathkey: Scmd+=' -pathkey "%s"' % args.pathkey
+		if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
+		if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
+
+
 	if args.sbatch_args: Scmd+=' -sbatch_args "%s"' % args.sbatch_args
 
 	if args.numruns>1:
@@ -117,10 +128,10 @@ if __name__ == '__main__':
 	limit = int(args.limit) if args.limit else None
 	savedir=args.savedir
 	if not savedir:
-		basename_path_source=os.path.basename(path_source)
+		#basename_path_source=os.path.basename(path_source)
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
 		#savedir='/'.join(['results_slingshot',module,args.stone,now()])
-		savedir='/'.join(['results_slingshot',basename_path_source,module,args.stone])
+		savedir='/'.join(['results_slingshot',module+'__'+args.stone])
 	if not os.path.exists(savedir): os.makedirs(savedir)
 	out_fnfn=os.path.join(savedir,'output.txt')
 	err_fnfn=os.path.join(savedir,'errors.txt')
@@ -145,12 +156,12 @@ if __name__ == '__main__':
 		#if type(stone_args) in [list,tuple,set]:
 		#	sling_args+=stone_args
 		if type(stone_args) in {dict}:
-			for k,v in stone_args.items():
+			for k,v in list(stone_args.items()):
 				sling_kwargs[k]=v
 
 
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns})" """.format(
+	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}')" """.format(
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
@@ -167,11 +178,12 @@ if __name__ == '__main__':
 		oneshot=args.oneshot,
 		stone_args_json=stone_args,
 		sling_kwargs=sling_kwargs,
+		llp_corpus=args.llp_corpus
 		#sling_args=sling_args
 	)
 
 
-	if not args.debug and args.parallel>1:
+	if not args.debug and int(args.parallel)>1:
 		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else ' '
 		command = 'mpirun'+mpi_opts+command
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
@@ -217,11 +229,11 @@ if __name__ == '__main__':
 	#import subprocess
 	#subprocess.check_output(command,shell=True)
 	if not IS_INTERACTIVE and not args.dryrun:
-		print '\n!! EXCUTING NOW @ %s !!\n' % now(seconds=True)
-		print otxt
+		print('\n!! EXCUTING NOW @ %s !!\n' % now(seconds=True))
+		print(otxt)
 		os.system(command)
 	else:
-		print '## In order to execute slingshot, you must paste in either of the following commands,'
-		print '## preferably the former: a custom argument syntax, which you can see at:'
-		print '## slingshot --help. ##'
-		print otxt
+		print('## In order to execute slingshot, you must paste in either of the following commands,')
+		print('## preferably the former: a custom argument syntax, which you can see at:')
+		print('## slingshot --help. ##')
+		print(otxt)
