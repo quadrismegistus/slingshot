@@ -26,7 +26,7 @@ Principal functions
 
 def path2txt(path):
 	with xopen(path) as f:
-		return f.read()#.decode('utf-8')
+		return f.read().decode('utf-8')
 
 def parse_path(path):
 	return list(parse(path2txt(path)))
