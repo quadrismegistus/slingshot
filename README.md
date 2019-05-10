@@ -83,22 +83,22 @@ That’s all we need! The other options are optional:
 
 	>> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]
 	>> (Y/N)
-	
+
 	>> DEBUG: Do not run on MPI and do not submit with sbatch? [N]
 	>> (Y/N)
-	
+
 	>> SAVE: Save results? [Y]
 	>> (Y/N)
-	
+
 	>> SAVEDIR: Directory to store results in [results_slingshot/prosodic_parser/parse_chadwyck]
 	>>
-	
+
 	>> CACHE: Cache partial results? [Y]
 	>> (Y/N)
-	
+
 	>> QUIET: Print nothing to screen? [N]
 	>> (Y/N)
-	
+
 	>> LIMIT: Limit the number of paths to process to this number [None]
 	>>
 
@@ -117,7 +117,7 @@ We should now also have two results files in the folder: results.jsonl, in the [
 	["/...blah.../00022180.txt", {"count": 310725}]
 	["/...blah.../00004615.txt", {"count": 70321}]
 	["/...blah.../00021819.txt", {"count": 88483}]
-	
+
 Each line is a two-item list: [ {path} , {data returned from slingshot} ].
 
 #### results.txt
@@ -130,3 +130,10 @@ And results.txt, which has the same data but formatted as a TSV file. It reads:
 	/...blah.../00021819.txt	88483
 
 But results.txt is different in one regard: to make results.txt, a tab-separated dataframe with (in this case) words as columns and texts as rows, we need to prune the number of columns, otherwise we’d have millions of them, and the file would become fat with empty cells (tab characters). By default, slingshot will limit the columns to the N most frequently found present in the data (in this case the N most frequent words). N can be set using the >> MFW prompt; it defaults to 10,000.
+
+
+### Dependencies
+
+#### For R
+
+* RJSONIO

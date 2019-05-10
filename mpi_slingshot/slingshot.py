@@ -188,9 +188,9 @@ def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path
 
 
 
-
-
 def load_stone_in_sling(path_sling,stone_name):
+
+
 	if not path_sling or not stone_name:
 		print('!! sling or stone not specified')
 		return
@@ -201,17 +201,29 @@ def load_stone_in_sling(path_sling,stone_name):
 			return
 		path_sling=in_PATH_STRINGS
 	if path_sling.endswith('.py'):
-		sling = imp.load_source('sling', path_sling)
+		try:
+			import importlib.util
+			spec = importlib.util.spec_from_file_location("sling", path_sling)
+			sling = importlib.util.module_from_spec(spec)
+			spec.loader.exec_module(sling)
+		except ImportError:
+			import imp
+			sling = imp.load_source('sling', path_sling)
+
+
 		stone = getattr(sling,stone_name)
 		return stone
 
 	if path_sling.endswith('.R'):
-		from rpy2.robjects import r as Rno
+		from rpy2.robjects import r as R
 		# load all source
 		with open(path_sling) as f:
 			code=f.read()
-			R(code)
-			stone = lambda x: rconvert(R[stone_name](x))
+
+			R('library(RJSONIO)')
+			rfunc = R(code)
+			#print('done!')
+			stone = lambda _path: rconvert(rfunc(_path))
 			return stone
 
 
@@ -381,15 +393,14 @@ def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols):
 
 
 def rconvert(robj):
-	import rpy2
-	#if type(robj) == rpy2.robjects.vectors.ListVector:
-	try:
-		return { key : robj.rx2(key)[0] for key in robj.names }
-	except AttributeError:
-		print("!! forcing conversion for:",robj)
-		from rpy2.robjects import pandas2ri
-		pandas2ri.activate()
-		return pandas2ri.ri2py(robj)
+	from rpy2.robjects import r as R
+	from rpy2.robjects import pandas2ri
+	pandas2ri.activate()
+	rjson=R['toJSON'](robj, collapse=' ')
+	rjson_str = pandas2ri.ri2py(rjson)[0]
+	pyobj = json.loads(rjson_str)
+	sys.stdout.flush()
+	return pyobj
 
 
 ### Loading results
@@ -415,12 +426,12 @@ def stream_results_json(path_cache,ext='.json'):
 
 def stream_results(path_cache,ext='.jsonl'):
 	if 'jsonl' in os.path.basename(path_cache).split('.'):
-		for path,data in stream_jsonl:
+		for path,data in stream_jsonl(path_cache):
 			#if '.ipynb' in path: continue
 			yield (path,data)
 	else:
 		for fn in sorted(os.listdir(path_cache)):
-			if not fn.endswith(ext): continue
+			if (not fn.endswith(ext) and not fn.endswith(ext+'.gz')): continue
 			fnfn=os.path.join(path_cache,fn)
 			print('>> streaming:',fnfn,'...')
 			for path,data in stream_jsonl(fnfn):
@@ -434,8 +445,9 @@ def stream_results(path_cache,ext='.jsonl'):
 # 			yield x
 
 def stream_jsonl(fn):
-	import codecs,ujson as json
-	with open(fn) as f:
+	from xopen import xopen
+	import ujson as json
+	with xopen(fn) as f:
 		for ln in f:
 			yield json.loads(ln)
 
