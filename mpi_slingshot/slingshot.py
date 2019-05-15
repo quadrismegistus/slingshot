@@ -21,6 +21,8 @@ if not PATH_KEY: PATH_KEY=DEFAULT_PATH_KEY
 if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
 
+print(sys.path)
+
 
 def slingshot_single_shot(stone,path):
 	return stone(path)
