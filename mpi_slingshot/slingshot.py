@@ -20,8 +20,8 @@ PATH_EXT=CONFIG.get('PATH_EXT','').replace('.','')
 if not PATH_KEY: PATH_KEY=DEFAULT_PATH_KEY
 if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
-
-print(sys.path)
+#sys.path.append('/oak/stanford/groups/malgeehe/local/python/')
+#print(sys.path)
 
 
 def slingshot_single_shot(stone,path):
