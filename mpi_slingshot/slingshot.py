@@ -42,7 +42,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 
 
 	all_paths = None
-	if llp_corpus:
+	if llp_corpus and llp_corpus!='None':
 		try:
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
