@@ -445,9 +445,10 @@ def stream_results(path_cache,ext='.jsonl'):
 # 			yield x
 
 def stream_jsonl(fn):
-	from xopen import xopen
+	#from xopen import xopen
 	import ujson as json
-	with xopen(fn) as f:
+	#with xopen(fn) as f:
+	with open(fn) as f:
 		for ln in f:
 			yield json.loads(ln)
 
