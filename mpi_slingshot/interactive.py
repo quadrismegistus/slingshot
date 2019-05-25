@@ -7,7 +7,7 @@ from .slingshot import is_csv
 from six.moves import input
 
 
-def interactive(parser, SLING_EXT=['py','R']):
+def interactive(parser, SLING_EXT=['py','R','ipynb']):
 	slings=None
 	import readline
 	from .tab_completer import tabCompleter

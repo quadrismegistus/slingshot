@@ -135,7 +135,9 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 				#except:
 				#	print "!! could not write to results file!"
 		#################################################
-		print('>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths))
+		#print('>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths))
+		#print('>> Clone #%s slings %s at Target #%s (of %s)' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),num_paths))
+		print('>> Clone #%s -- slings --> Target #%s / %s' % (str(rank).zfill(zlen_rank),str(i+1).zfill(zlen),num_paths))
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
@@ -189,18 +191,17 @@ def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path
 
 
 def load_stone_in_sling(path_sling,stone_name):
-
-
 	if not path_sling or not stone_name:
 		print('!! sling or stone not specified')
 		return
-	if not os.path.exists(path_sling):
+	elif not os.path.exists(path_sling):
 		in_PATH_STRINGS=os.path.join(CONFIG['PATH_SLINGS'],path_sling)
 		if not os.path.exists(in_PATH_STRINGS):
 			print("!!",path,"does not exist")
 			return
 		path_sling=in_PATH_STRINGS
-	if path_sling.endswith('.py'):
+
+	elif path_sling.endswith('.py'):
 		try:
 			import importlib.util
 			spec = importlib.util.spec_from_file_location("sling", path_sling)
@@ -214,7 +215,19 @@ def load_stone_in_sling(path_sling,stone_name):
 		stone = getattr(sling,stone_name)
 		return stone
 
-	if path_sling.endswith('.R'):
+	elif path_sling.endswith('.ipynb'):
+		import nbimporter
+		nbimporter.options['only_defs'] = CONFIG.get('NBIMPORTER_ONLY_DEFS',False)
+
+		ppath,pfn = os.path.split(path_sling)
+		pname,pext = os.path.splitext(pfn)
+
+		NBL = nbimporter.NotebookLoader(path=[ppath])
+		sling = NBL.load_module(pname)
+		stone = getattr(sling,stone_name)
+		return stone
+
+	elif path_sling.endswith('.R'):
 		from rpy2.robjects import r as R
 		# load all source
 		with open(path_sling) as f:
@@ -225,6 +238,8 @@ def load_stone_in_sling(path_sling,stone_name):
 			#print('done!')
 			stone = lambda _path: rconvert(rfunc(_path))
 			return stone
+
+
 
 
 def get_all_paths_from_folder(rootdir,ext='.txt'):
@@ -357,7 +372,7 @@ def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):
 
 
 
-def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols):
+def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols=10000):
 	now=time.time()
 
 	# First find KEYS
