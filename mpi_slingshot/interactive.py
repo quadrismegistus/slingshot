@@ -55,11 +55,26 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 		if args.sling.endswith('.py'):
 			import imp,inspect
 			sling = imp.load_source('sling', args.sling)
+			# functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
+			# functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
+			# tabber.createListCompleter(functions)
+		elif args.sling.endswith('.ipynb'):
+			import nbimporter
+			nbimporter.options['only_defs'] = CONFIG.get('NBIMPORTER_ONLY_DEFS',False)
+			ppath,pfn = os.path.split(args.sling)
+			pname,pext = os.path.splitext(pfn)
+			NBL = nbimporter.NotebookLoader(path=[ppath])
+			sling = NBL.load_module(pname)
+		else:
+			sling = None
+			functions_str=''
+
+		if sling:
 			functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
 			functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
 			tabber.createListCompleter(functions)
-		else:
-			functions_str=''
+
+
 		while not args.stone:
 
 			#prompt='\n>> STONE: {help}\noptions: {opts}\n>>'.format(help=arg2help['stone'], opts=', '.join(functions))
