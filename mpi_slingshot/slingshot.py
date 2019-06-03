@@ -2,7 +2,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 import os,sys,codecs,numpy as np,random,imp,time,random
 try:
-	import ujson as json
+	#import ujson as json
+	import simplejson as json
 except ImportError:
 	import json
 from datetime import datetime as dt
@@ -130,7 +131,8 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			if cache_writer:
 				#cache_writer.write(path_result) # when using jsonlines
 				#try:
-				jsonl=json.dumps(path_result)
+				#jsonl=json.dumps(path_result)
+				jsonl=json.dumps(path_result,ignore_nan=True)
 				cache_writer.write(jsonl + '\n')
 				#except:
 				#	print "!! could not write to results file!"
@@ -345,7 +347,8 @@ def save_results_json(results_fnfn,cache_results,cache_path,stream_results):
 						results_f.write(line.strip()+'\n')
 	else:
 		with codecs.open(results_fnfn,'wb') as results_f:
-			json.dump(RESULTS,results_f)
+			#json.dump(RESULTS,results_f)
+			json.dump(RESULTS,results_f,ignore_nan=True)
 	print('>> saved:',results_fnfn)
 
 def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):

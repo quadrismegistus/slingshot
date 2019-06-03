@@ -5,7 +5,7 @@ from .logos import SLINGSHOT
 from .config import CONFIG
 from .slingshot import is_csv
 from six.moves import input
-
+import imp,inspect
 
 def interactive(parser, SLING_EXT=['py','R','ipynb']):
 	slings=None
@@ -53,7 +53,6 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 		# STONE
 		print(HR)
 		if args.sling.endswith('.py'):
-			import imp,inspect
 			sling = imp.load_source('sling', args.sling)
 			# functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
 			# functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
