@@ -47,7 +47,8 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		try:
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
-			all_paths = [text.path_txt for text in corpus.texts()]
+			all_paths = [text.path for text in corpus.texts()]
+			print(all_paths[:10])
 		except ImportError:
 			pass
 
