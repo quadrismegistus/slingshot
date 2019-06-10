@@ -4,8 +4,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-#PYTHON_PATH='python3'
-PYTHON_PATH='python'
+PYTHON_PATH='python3'
+#PYTHON_PATH='python'
 
 import os,argparse,sys
 
