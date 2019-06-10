@@ -195,6 +195,11 @@ if __name__ == '__main__':
 		jobname=''.join([x for x in savedir if x.isalnum()][-8:])
 		sbatch = 'sbatch --output={out} --error={err} --job-name={jobname}'.format(out=out_fnfn,err=err_fnfn,jobname=jobname)
 
+		# preserve env?
+		sbatch+=' --preserve-env'
+		# sbatch args? @HACK FOR SHERLOCK
+		sbatch+=' -p hns'
+
 		# v1
 		command = sbatch+' -n {n} -c 1 --mem-per-cpu {mem} -t {h}:00:00 --wrap="{cmd}"{other_args}'.format(mem=args.mem, n=args.parallel, h=str(args.hours).zfill(2), cmd=cmd, other_args=' '+ (args.sbatch_args.strip()) if args.sbatch_args else '')
 		# v1b
