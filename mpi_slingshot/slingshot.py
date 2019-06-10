@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os,sys,codecs,numpy as np,random,imp,time,random
-try:
+#try:
 	#import ujson as json
-	import simplejson as json
-except ImportError:
-	import json
+import simplejson as json
+#except ImportError:
+#	import json
 from datetime import datetime as dt
 import unicodecsv as csv
 from collections import defaultdict,Counter
