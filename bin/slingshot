@@ -196,8 +196,8 @@ if __name__ == '__main__':
 		sbatch = 'sbatch --output={out} --error={err} --job-name={jobname}'.format(out=out_fnfn,err=err_fnfn,jobname=jobname)
 
 		# preserve env?
-		sbatch+=' --preserve-env'
-		# sbatch args? @HACK FOR SHERLOCK
+		#sbatch+=' --preserve-env'
+		# sbatch args? @HACK FOR SHERLOCK @TODO fix?
 		sbatch+=' -p hns'
 
 		# v1
