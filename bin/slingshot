@@ -4,6 +4,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+PYTHON_PATH='python3'
+#PYTHON_PATH='python'
+
 import os,argparse,sys
 
 def now(now=None,seconds=False):
@@ -160,7 +163,8 @@ if __name__ == '__main__':
 
 
 	# Execute!
-	command = """python -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}')" """.format(
+	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}')" """.format(
+		python_command=PYTHON_PATH,
 		sling=args.sling,
 		stone=args.stone,
 		path_source=path_source,
