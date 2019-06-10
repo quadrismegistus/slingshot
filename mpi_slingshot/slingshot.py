@@ -301,6 +301,7 @@ def get_paths_from_pathlist(_fnfn,sep='\t',path_key=PATH_KEY,path_prefix='',path
 
 
 def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_prefix='',path_suffix=''):
+	paths=None
 	if path_source:
 		if os.path.isdir(path_source):
 			paths=list(get_all_paths_from_folder(path_source,path_ext)) if path_source else None
@@ -311,11 +312,11 @@ def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_p
 			pathlist_path_source = os.path.join(path_pathlists,path_source)
 			if os.path.exists(pathlist_path_source):
 				paths=get_paths(pathlist_path_source)
-	paths=paths[:limit]
 	#paths=[p for p in paths if os.path.exists(p)]
 	if not paths:
 		print('!! no paths given or found at %s' % path_source if path_source else '')
 		return
+	paths=paths[:limit]
 	if shuffle_paths:
 		random.shuffle(paths)
 	return paths
