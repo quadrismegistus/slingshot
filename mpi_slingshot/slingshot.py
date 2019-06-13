@@ -47,6 +47,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		try:
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
+			print(llp_corpus, corpus)
 			all_paths = [text.path for text in corpus.texts()]
 			print(all_paths[:10])
 		except ImportError:
@@ -193,18 +194,24 @@ def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path
 
 
 
-def load_stone_in_sling(path_sling,stone_name):
+def load_stone_in_sling(path_sling,stone_name, exts=['','.py','.ipynb']):
 	if not path_sling or not stone_name:
 		print('!! sling or stone not specified')
 		return
 	elif not os.path.exists(path_sling):
-		in_PATH_STRINGS=os.path.join(CONFIG['PATH_SLINGS'],path_sling)
-		if not os.path.exists(in_PATH_STRINGS):
-			print("!!",path,"does not exist")
+		new_path=None
+		for ext in exts:
+			abs_path_sling_ext=os.path.join(CONFIG['PATH_SLINGS'],path_sling+ext)
+			#print(abs_path_sling_ext)
+			if os.path.exists(abs_path_sling_ext):
+				new_path=abs_path_sling_ext
+				break
+		if not new_path:
+			print("!!",path_sling,"does not exist")
 			return
-		path_sling=in_PATH_STRINGS
+		path_sling=new_path
 
-	elif path_sling.endswith('.py'):
+	if path_sling.endswith('.py'):
 		try:
 			import importlib.util
 			spec = importlib.util.spec_from_file_location("sling", path_sling)
