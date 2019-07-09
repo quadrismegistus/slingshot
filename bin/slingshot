@@ -188,7 +188,7 @@ if __name__ == '__main__':
 
 	if not args.debug and int(args.parallel)>1:
 		mpi_opts = ' -np %s ' % args.parallel if not args.sbatch and args.parallel else ' '
-		command = 'mpirun'+mpi_opts+command
+		command = 'mpirun --oversubscribe'+mpi_opts+command
 	#if args.sbatch: command = 'sbatch --ntasks-per-node=2 --wrap="%s"' % command.replace('"','\\"')
 	if args.sbatch:
 		cmd=command.replace('"','\\"')
