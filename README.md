@@ -1,5 +1,5 @@
-# mpi-slingshot
-A Python wrapper to "slingshot" a "rock" (function) across thousands of files using MPI.
+# slingshot
+A Python wrapper to "slingshot" a function across thousands of files using MPI.
 
 ## Slaying the Goliath of big data
 We’re David. Our data is Goliath. How can we slay Goliath by extending our code over hundreds of thousands of texts? To do so, we write a little function, a “stone,” and then load it into the slingshot: the program then takes care of “throwing” the stone at hundreds of thousands of text files. It works by cloning David, basically, so that 4, 8, or 128 Davids are all pelting Goliath at the same time. More specifically, the “stone” is a function that accepts a path to text file; that function then reads and processes the text in any way at all; and then returns data in any form. That data will then be collected together and saved in both JSON and, where possible, as a TSV, the latter of which can be opened directly in Python/Pandas, R, and Excel.
