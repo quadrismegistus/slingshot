@@ -34,7 +34,8 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 		SLING_EXT = CONFIG.get('SLING_EXT','')
 		if path_slings and os.path.exists(path_slings) and os.path.isdir(path_slings):
 			slings=sorted([fn for fn in os.listdir(path_slings) if fn.split('.')[-1] in SLING_EXT])
-			sling_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
+			#sling_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
+			sling_str='  '+'\n            '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
 		while not args.sling:
 			readline.set_completer(tabber.pathCompleter)
 			print('\n>> SLING: '+arg2help['sling'])
