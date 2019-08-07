@@ -156,6 +156,21 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 		#default_savedir='/'.join(['results_slingshot',module,args.stone,now()])
 		default_savedir='/'.join(['results_slingshot',module,args.stone])
 
+		#args.nosave = input('\n>> SAVE: Save results? [Y]\n>> (Y/N) ').strip().lower()=='n'
+		args.nosave = False
+
+		if not args.nosave:
+			args.savedir = input('\n>> SAVEDIR: Directory to store results in [%s]' % default_savedir  + '\n>> ').strip()
+			#args.cache = input('\n>> CACHE: Cache partial results? [Y]\n>> (Y/N) ').strip().lower()=='y'
+			args.cache = True
+			#mfw = input('\n>> MFW: %s' % arg2help['mfw'] + '\n>> ').strip()
+			mfw=None
+			args.mfw=mfw if mfw else parser.get_default('mfw')
+
+		#args.quiet = input('\n>> QUIET: %s? [N]\n>> (Y/N) ' % arg2help['quiet']).strip().lower()=='y'
+		args.quiet = False
+		args.limit = input('\n>> LIMIT: '+arg2help['limit']+' [None]\n>> ').strip()
+
 		args.sbatch = input('\n>> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]\n>> (Y/N) ').strip().lower()=='y'
 		if args.sbatch:
 			args.parallel = input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
@@ -167,17 +182,8 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 			mem = input('\n>> MEMORY: '+arg2help['mem']+' [2G]\n>> ').strip()
 			args.mem = parser.get_default('mem') if not mem else mem
 		else:
-			args.debug = input('\n>> DEBUG: %s? [N]\n>> (Y/N) ' % arg2help['debug']).strip().lower()=='y'
-
-		args.nosave = input('\n>> SAVE: Save results? [Y]\n>> (Y/N) ').strip().lower()=='n'
-		if not args.nosave:
-			args.savedir = input('\n>> SAVEDIR: Directory to store results in [%s]' % default_savedir  + '\n>> ').strip()
-			args.cache = input('\n>> CACHE: Cache partial results? [Y]\n>> (Y/N) ').strip().lower()=='y'
-			mfw = input('\n>> MFW: %s' % arg2help['mfw'] + '\n>> ').strip()
-			args.mfw=mfw if mfw else parser.get_default('mfw')
-
-		args.quiet = input('\n>> QUIET: %s? [N]\n>> (Y/N) ' % arg2help['quiet']).strip().lower()=='y'
-		args.limit = input('\n>> LIMIT: '+arg2help['limit']+' [None]\n>> ').strip()
+			#args.debug = input('\n>> DEBUG: %s? [N]\n>> (Y/N) ' % arg2help['debug']).strip().lower()=='y'
+			args.debug = False
 
 		print()
 
