@@ -162,10 +162,6 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			results_fnfn_metadata = os.path.join(results_dir,'metadata.txt')
 			save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,all_paths,path_source)
 
-			# Save JSON
-			#results_fnfn_json = os.path.join(results_dir,'results.jsonl')
-			#save_results_json(results_fnfn_json,cache_results,cache_path,stream_results)
-
 			# Stream-save TSV
 			results_fnfn_txt = os.path.join(results_dir,'results.txt')
 			if save_txt: save_results_txt(results_fnfn_txt,cache_path,txt_maxcols)
@@ -272,17 +268,6 @@ def get_paths_from_csv(_fnfn,path_key=PATH_KEY,path_ext=PATH_EXT,path_prefix='',
 			if not path: continue
 			if path_prefix: path=os.path.join(path_prefix,path)
 			if path_suffix: path=path+path_suffix
-			#path_from_fnfn = os.path.join(os.path.dirname(_fnfn),path)
-			#path_from_fnfn_plus_ext = '.'.join(path_from_fnfn.split('.')+[path_ext])
-			#path_exists=os.path.exists(path)
-			#print [path,path_from_fnfn,path_from_fnfn_plus_ext]
-			# if not path_exists:
-			# 	if os.path.exists(path_from_fnfn):
-			# 		path=os.path.abspath(path_from_fnfn)
-			# 	elif os.path.exists(path_from_fnfn_plus_ext):
-			# 		path=os.path.abspath(path_from_fnfn_plus_ext)
-			# 	else:
-			# 		continue
 			if path: paths+=[path]
 	return paths
 
@@ -331,59 +316,6 @@ def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_p
 
 
 
-
-def save_results_jsonl(results_fnfn,cache_results,cache_path,stream_results):
-	if cache_results and cache_path and stream_results:
-		with codecs.open(results_fn, 'w', encoding='utf-8') as of:
-			for fn_c in sorted(os.listdir(cache_path)):
-				if not fn_c.endswith('.jsonl'): continue
-				fnfn_c=os.path.join(cache_path,fn_c)
-				with codecs.open(fnfn_c,encoding='utf-8') as f_c:
-					for line in f_c:
-						of.write(line)
-
-
-def save_results_json(results_fnfn,cache_results,cache_path,stream_results):
-	if cache_results and cache_path and stream_results:
-		with codecs.open(results_fnfn,'w',encoding='utf-8') as results_f:
-			results_f.write('[\n')
-			for fn_c in sorted(os.listdir(cache_path)):
-				if not fn_c.endswith('.jsonl'): continue
-				fnfn_c=os.path.join(cache_path,fn_c)
-				with codecs.open(fnfn_c,encoding='utf-8') as f_c:
-					for line in f_c:
-						if len(line)<3: continue
-						results_f.write(line.strip()+'\n')
-	else:
-		with codecs.open(results_fnfn,'wb') as results_f:
-			#json.dump(RESULTS,results_f)
-			json.dump(RESULTS,results_f,ignore_nan=True)
-	print('>> saved:',results_fnfn)
-
-def save_results_json_v1(results_fnfn,cache_results,cache_path,stream_results):
-	if cache_results and cache_path and stream_results:
-		with codecs.open(results_fnfn,'w',encoding='utf-8') as results_f:
-			results_f.write('[\n')
-			for fn_c in sorted(os.listdir(cache_path)):
-				if not fn_c.endswith('.jsonl'): continue
-				fnfn_c=os.path.join(cache_path,fn_c)
-				with codecs.open(fnfn_c,encoding='utf-8') as f_c:
-					for line in f_c:
-						if len(line)<3: continue
-						results_f.write(line.strip()+'\n')
-					#results_f.seek(-2,1)
-					results_f.write(',\n')
-				# delete cache file
-				#os.unlink(fnfn_c)
-			results_f.seek(-3,1)
-			results_f.write('\n]\n\n')
-	else:
-		with codecs.open(results_fnfn,'wb') as results_f:
-			json.dump(RESULTS,results_f)
-	print('>> saved:',results_fnfn)
-
-
-
 def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols=10000):
 	now=time.time()
 
@@ -391,7 +323,7 @@ def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols=10000):
 	KEYS=set()
 	if txt_maxcols: Count=Counter()
 
-	for path,result in stream_results(path_cache):
+	for path,result in stream_results(path_cache,flatten=True):
 		if hasattr(result,'keys'):
 			if txt_maxcols:
 				Count.update(list(result.keys()))
@@ -409,7 +341,7 @@ def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols=10000):
 		with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:#, jsonlines.open(results_fnfn_json) as reader:
 			results_f_txt.write('\t'.join(header) + '\n')
 			#for path,result in reader.iter(skip_invalid=True):
-			for path,result in stream_results(path_cache):
+			for path,result in stream_results(path_cache,flatten=True):
 				result['_path']=path
 				orow=[six.text_type(result.get(h,'')) for h in header]
 				results_f_txt.write('\t'.join(orow) + '\n')
@@ -431,29 +363,11 @@ def rconvert(robj):
 
 
 ### Loading results
-def stream_results_json(path_cache,ext='.json'):
-	import ujson as json
-	for fn in sorted(os.listdir(path_cache)):
-		if not fn.endswith(ext): continue
-		fnfn=os.path.join(path_cache,fn)
-		print('>> streaming:',fnfn,'...')
-		with open(fnfn) as f:
-			for i,ln in enumerate(f):
-				line=ln[:-2]
-				if not line: continue
-				try:
-					path,data=json.loads(line)
-				except ValueError as e:
-					print('!!',e)
-					print("!!",line[:200])
-					continue
-				yield (path,data)
 
 
-
-def stream_results(path_cache,ext='.jsonl'):
+def stream_results(path_cache,ext='.jsonl',flatten=False):
 	if 'jsonl' in os.path.basename(path_cache).split('.'):
-		for path,data in stream_jsonl(path_cache):
+		for path,data in stream_jsonl(path_cache,flatten=flatten):
 			#if '.ipynb' in path: continue
 			yield (path,data)
 	else:
@@ -461,23 +375,24 @@ def stream_results(path_cache,ext='.jsonl'):
 			if (not fn.endswith(ext) and not fn.endswith(ext+'.gz')): continue
 			fnfn=os.path.join(path_cache,fn)
 			print('>> streaming:',fnfn,'...')
-			for path,data in stream_jsonl(fnfn):
+			for path,data in stream_jsonl(fnfn,flatten=flatten):
 				#if '.ipynb' in path: continue
 				yield (path,data)
 
-# def stream_jsonl(fn):
-# 	import json_lines
-# 	with json_lines.open(fn) as reader:
-# 		for x in reader:
-# 			yield x
 
-def stream_jsonl(fn):
+def stream_jsonl(fn,flatten=False):
 	#from xopen import xopen
 	import ujson as json
 	#with xopen(fn) as f:
 	with open(fn) as f:
 		for ln in f:
-			yield json.loads(ln)
+			path,data=json.loads(ln)
+			if not flatten or type(data)!=list:
+				yield (path,data)
+			else:
+				for i,data_x in enumerate(data):
+					yield (path if not i else '',data_x)
+
 
 def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 	if 'jsonl' in fnfn.split('.'): return writegen_jsonl(fnfn,generator,args=args,kwargs=kwargs)
