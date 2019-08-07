@@ -133,6 +133,7 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir='./',ski
 #### CONSOLIDATING
 def model_words(path_model):
 	import pandas as pd
+	from llp.model.word2vec import Word2Vec
 	m = Word2Vec(fn=path_model)
 	ld=m.model_words(save=False)
 	df=pd.DataFrame(ld).drop(['model_rank','model_count'],1).set_index('word')
