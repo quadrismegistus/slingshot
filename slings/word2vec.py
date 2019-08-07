@@ -3,7 +3,7 @@ from __future__ import print_function
 import os,codecs
 from six.moves import range
 
-STONES = ['save_skipgrams_from_txt_paths','gen_word2vec_model_from_skipgrams']
+STONES = ['save_skipgrams_from_txt_paths','gen_word2vec_model_from_skipgrams','model_words']
 
 ### TOKENIZER
 def tokenize_fast(line):
