@@ -179,9 +179,11 @@ def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path
 			of.write(path+'\n')
 
 	path_pathlists = CONFIG.get('PATH_PATHLISTS','')
-	pathlist_path_source = os.path.join(path_pathlists,path_source)
+	pathlist_path_source = os.path.join(path_pathlists,path_source if path_source else '')
 
-	if os.path.exists(path_source) and is_csv(path_source):
+	if not path_source:
+		pass
+	elif os.path.exists(path_source) and is_csv(path_source):
 		from shutil import copyfile
 		copyfile(path_source, results_fnfn_metadata)
 	elif os.path.exists(pathlist_path_source) and is_csv(path_source):
@@ -249,7 +251,7 @@ def load_stone_in_sling(path_sling,stone_name, exts=['','.py','.ipynb']):
 
 
 def get_all_paths_from_folder(rootdir,ext='.txt'):
-	for root, subdirs, files in os.walk(rootdir):
+	for root, subdirs, files in os.walk(rootdir,followlinks=True):
 		for fn in files:
 			if fn.endswith(ext):
 				yield os.path.join(root,fn)
