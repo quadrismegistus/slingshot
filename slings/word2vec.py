@@ -123,3 +123,19 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir='./',ski
 	model.wv.save_word2vec_format(ofnfn, ofnfn_vocab)
 	print(">> saved:",ofnfn)
 	print(">> saved:",ofnfn_vocab)
+
+
+
+
+
+
+
+#### CONSOLIDATING
+def model_words(path_model):
+	import pandas as pd
+	m = Word2Vec(fn=path_model)
+	ld=m.model_words(save=False)
+	df=pd.DataFrame(ld).drop(['model_rank','model_count'],1).set_index('word')
+	dfz=df.apply(zscore)
+	df2=df.join(dfz,rsuffix='_z')
+	return df2.to_dict('records')
