@@ -310,6 +310,7 @@ def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_p
 	if not paths:
 		print('!! no paths given or found at %s' % path_source if path_source else '')
 		return
+	paths=sorted(list(set(paths)))
 	paths=paths[:limit]
 	if shuffle_paths:
 		random.shuffle(paths)

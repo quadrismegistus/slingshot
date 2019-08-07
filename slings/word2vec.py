@@ -140,4 +140,5 @@ def model_words(path_model):
 	df=pd.DataFrame(ld).drop(['model_rank','model_count'],1).set_index('word')
 	dfz=df.apply(zscore)
 	df2=df.join(dfz,rsuffix='_z')
+	df2['word']=df2.index
 	return df2.to_dict('records')
