@@ -17,7 +17,7 @@ def now(now=None,seconds=False):
 	elif type(now) in [int,float,str]:
 		now=dt.datetime.fromtimestamp(now)
 
-	return '{0}.{1}.{2}.{3}{4}:{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
+	return '{1}/{2}/{0} {3}:{4}:{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
 
 def has_minimal_info(args):
 	if args.llp_method and args.llp_corpus: return True
@@ -66,6 +66,7 @@ if __name__ == '__main__':
 	parser.add_argument('-dryrun',help='Dry run: do not execute',action='store_true')
 	parser.add_argument('-sbatch_args',help='Any other arguments for SLURM?',default='')
 	parser.add_argument('-progress','-P',help='Show progress bar?',action='store_true')
+	parser.add_argument('-overwrite','-force',help='Overwrite same savedir, do not iterate',action='store_true')
 	args = parser.parse_args()
 
 	args.sling=args.code
@@ -157,7 +158,7 @@ if __name__ == '__main__':
 			savedir=os.path.join(DEFAULT_DATA_FOLDER,args.llp_method)
 
 
-	if os.path.exists(savedir):
+	if os.path.exists(savedir) and not args.overwrite:
 		savedirnum=2
 		while os.path.exists(savedir + str(savedirnum)):
 			savedirnum+=1
@@ -260,6 +261,7 @@ if __name__ == '__main__':
 	if args.debug: Scmd+=' -debug'
 	if args.quiet: Scmd+=' -quiet'
 	if args.llp_pass_text: Scmd+=' -llp_pass_text'
+	if args.progress: Scmd+=' -progress'
 
 	otxt='>> SLINGSHOT COMMAND:\n{Scmd}\n\n>> EXECUTING COMMAND:\n{command}\n'.format(Scmd=Scmd,command=command)
 	with open(cmd_fnfn,'w') as f: f.write(otxt)
@@ -270,7 +272,7 @@ if __name__ == '__main__':
 	#subprocess.check_output(command,shell=True)
 	if not IS_INTERACTIVE and not args.dryrun:
 		print('\n>> [Slingshot] starting at %s...' % now(seconds=True))
-		print('>>',Scmd)
+		print('>> [Slingshot] executing:',Scmd)
 		#print(otxt)
 		os.system(command)
 	else:
