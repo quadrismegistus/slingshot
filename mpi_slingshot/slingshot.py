@@ -77,7 +77,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	comm = MPI.COMM_WORLD
 	size = comm.Get_size()
 	rank = comm.Get_rank()
-	print('>> SLINGSHOT: initializing MPI with size %s and rank %s' % (size,rank))
+	print('>> [Slingshot] initializing MPI with size %s and rank %s' % (size,rank))
 
 
 	# Am I the seed process?
@@ -87,7 +87,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 
 		# Farm out paths to other processes
 		segments = np.array_split(all_paths,size) if size>1 else [all_paths]
-		print('>> SLINGSHOT: %s paths divided into %s segments' % (len(all_paths), len(segments)))
+		print('>> [Slingshot]: %s paths divided into %s segments' % (len(all_paths), len(segments)))
 
 	# Or am I a process created by the seed?
 	else:
@@ -118,7 +118,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	#progress_bar=True
 	if progress_bar:
 		from tqdm import tqdm
-		looper=tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100,mininterval=1.0)
+		looper=tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100)#,mininterval=1.0)
 	else:
 		looper=paths
 

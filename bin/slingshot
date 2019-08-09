@@ -17,7 +17,7 @@ def now(now=None,seconds=False):
 	elif type(now) in [int,float,str]:
 		now=dt.datetime.fromtimestamp(now)
 
-	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
+	return '{0}.{1}.{2}.{3}{4}:{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
 
 def has_minimal_info(args):
 	if args.llp_method and args.llp_corpus: return True
@@ -269,8 +269,9 @@ if __name__ == '__main__':
 	#import subprocess
 	#subprocess.check_output(command,shell=True)
 	if not IS_INTERACTIVE and not args.dryrun:
-		print('\n!! EXCUTING NOW @ %s !!\n' % now(seconds=True))
-		print(otxt)
+		print('\n>> [Slingshot] starting at %s...' % now(seconds=True))
+		print(Scmds)
+		#print(otxt)
 		os.system(command)
 	else:
 		print('## In order to execute slingshot, you must paste in either of the following commands,')
