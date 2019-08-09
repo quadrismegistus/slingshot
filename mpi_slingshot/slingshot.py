@@ -28,7 +28,7 @@ TXT_MAXCOLS=25000
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv=''):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,do_stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv=''):
 	"""
 	Main function
 	"""
@@ -144,7 +144,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 
 		if result is not None:
 			path_result=(path,result)
-			if not stream_results: results+=[path_result]
+			if not do_stream_results: results+=[path_result]
 			#if cache_writer:
 			if cache_writer:
 				#cache_writer.write(path_result) # when using jsonlines
@@ -161,7 +161,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
-	#RESULTS = comm.gather(results, root=0)
+	RESULTS = comm.gather(results, root=0)
 
 	# If I am the seed process again
 	if rank == 0:
