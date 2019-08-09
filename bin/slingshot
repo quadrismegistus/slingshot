@@ -65,6 +65,7 @@ if __name__ == '__main__':
 	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
 	parser.add_argument('-dryrun',help='Dry run: do not execute',action='store_true')
 	parser.add_argument('-sbatch_args',help='Any other arguments for SLURM?',default='')
+	parser.add_argument('-progress','-P',help='Show progress bar?',action='store_true')
 	args = parser.parse_args()
 
 	args.sling=args.code
@@ -191,7 +192,7 @@ if __name__ == '__main__':
 
 
 	# Execute!
-	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text})" """.format(
+	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text}, progress_bar={progress_bar})" """.format(
 		python_command=PYTHON_PATH,
 		sling=args.sling,
 		stone=args.stone,
@@ -211,7 +212,8 @@ if __name__ == '__main__':
 		sling_kwargs=sling_kwargs,
 		llp_corpus=args.llp_corpus,
 		llp_method=args.llp_method,
-		llp_pass_text=args.llp_pass_text
+		llp_pass_text=args.llp_pass_text,
+		progress_bar=args.progress
 		#sling_args=sling_args
 	)
 
