@@ -28,7 +28,7 @@ TXT_MAXCOLS=25000
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv=''):
 	"""
 	Main function
 	"""
@@ -50,7 +50,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
 			#print(llp_corpus, corpus)
-			all_paths = [(text if (llp_pass_text or llp_method) else text.path) for text in corpus.texts()]
+			all_paths = [(text if (llp_pass_text or llp_method) else text.path) for text in corpus.texts()][:limit]
 			#print(all_paths[:10])
 		except ImportError:
 			pass
@@ -179,7 +179,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,all_paths,path_source)
 
 			# Stream-save TSV
-			results_fnfn_txt = os.path.join(results_dir,'results.txt')
+			results_fnfn_txt = os.path.join(results_dir,'results.txt') if not savecsv else savecsv
 			if save_txt: save_results_txt(results_fnfn_txt,cache_path,txt_maxcols)
 
 		# Exit

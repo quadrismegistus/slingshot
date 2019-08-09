@@ -40,6 +40,8 @@ if __name__ == '__main__':
 	parser.add_argument('-pathsuffix',help='If applicable, type a suffix for all paths on pathlist (eg: .txt)',default='')
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
 
+	parser.add_argument('-tmp',help='Save only temporarily, then delete savedir')
+
 	parser.add_argument('-llp_corpus',help='Specify a corpus name (requires Literary Language Processing module)')
 	parser.add_argument('-llp_method',help='A method on the LLP text object')
 	parser.add_argument('-llp_pass_text',help='Pass the LLP text object itself, not the path',action='store_true')
@@ -54,7 +56,9 @@ if __name__ == '__main__':
 
 	parser.add_argument('-nosave',help='Do not save results',action='store_true',default=False)
 	parser.add_argument('-nocache',help='Do not cache partial results',action='store_true')
-	parser.add_argument('-savedir',help='Directory to store results in [defaults to results_sling_stone_timestamp]')
+	parser.add_argument('-savedir',help='Directory to store results in [defaults to data_slingshot/function_name]')
+	parser.add_argument('-savecsv',help='Filename to save final csv/tsv file to [defaults to data_slingshot/function_name/results.txt]')
+
 	parser.add_argument('-mfw',help='Limit # of columns in results.txt to N most frequent in data',default=25000)
 
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
@@ -174,6 +178,7 @@ if __name__ == '__main__':
 	#other_args=[limit,savedir,tocache,tosave,args.mfw]
 	if limit: Scmd+=' -limit %s' % limit
 	if tosave and savedir: Scmd+=' -savedir %s' % savedir
+	if args.savecsv: Scmd+=' -savecsv %s' % args.savecsv
 	if not tocache: Scmd+=' -nocache'
 	if not tosave: Scmd+=' -nosave'
 	if args.oneshot: Scmd+=' -oneshot'
@@ -193,7 +198,7 @@ if __name__ == '__main__':
 
 
 	# Execute!
-	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text}, progress_bar={progress_bar})" """.format(
+	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text}, progress_bar={progress_bar}, savecsv='{savecsv}')" """.format(
 		python_command=PYTHON_PATH,
 		sling=args.sling,
 		stone=args.stone,
@@ -214,7 +219,8 @@ if __name__ == '__main__':
 		llp_corpus=args.llp_corpus,
 		llp_method=args.llp_method,
 		llp_pass_text=args.llp_pass_text,
-		progress_bar=args.progress
+		progress_bar=args.progress,
+		savecsv=args.savecsv,
 		#sling_args=sling_args
 	)
 
