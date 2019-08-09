@@ -270,7 +270,7 @@ if __name__ == '__main__':
 	#subprocess.check_output(command,shell=True)
 	if not IS_INTERACTIVE and not args.dryrun:
 		print('\n>> [Slingshot] starting at %s...' % now(seconds=True))
-		print(Scmds)
+		print('>>',Scmd)
 		#print(otxt)
 		os.system(command)
 	else:
