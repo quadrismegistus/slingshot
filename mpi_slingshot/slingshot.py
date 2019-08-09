@@ -116,7 +116,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	zlen_rank=len(str(size))
 	from tqdm import tqdm
 
-	for i,(path,run) in enumerate(tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank).zfill(3),position=rank,ncols=100,mininterval=1.0)):
+	for i,(path,run) in enumerate(tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100,mininterval=1.0)):
 		#################################################
 		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
