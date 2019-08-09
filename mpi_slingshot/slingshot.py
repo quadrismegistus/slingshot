@@ -118,7 +118,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	progress_bar=True
 	if progress_bar:
 		from tqdm import tqdm
-		looper=tqdm(paths,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100,mininterval=1.0)
+		looper=tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100,mininterval=1.0)
 	else:
 		looper=paths
 
