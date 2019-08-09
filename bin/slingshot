@@ -168,7 +168,13 @@ if __name__ == '__main__':
 			savedirnum+=1
 		savedir = savedir + str(savedirnum)
 
-	if not os.path.exists(savedir): os.makedirs(savedir)
+	if not os.path.exists(savedir):
+		os.makedirs(savedir)
+	else:
+		import shutil
+		shutil.rmtree(savedir)
+		os.makedirs(savedir)
+
 	out_fnfn=os.path.join(savedir,'output.txt')
 	err_fnfn=os.path.join(savedir,'errors.txt')
 	cmd_fnfn=os.path.join(savedir,'cmd.txt')
@@ -268,6 +274,7 @@ if __name__ == '__main__':
 	if args.quiet: Scmd+=' -quiet'
 	if args.llp_pass_text: Scmd+=' -llp_pass_text'
 	if args.progress: Scmd+=' -progress'
+	if args.overwrite: Scmd+=' -overwrite'
 
 	otxt='>> SLINGSHOT COMMAND:\n{Scmd}\n\n>> EXECUTING COMMAND:\n{command}\n'.format(Scmd=Scmd,command=command)
 	with open(cmd_fnfn,'w') as f: f.write(otxt)
