@@ -156,7 +156,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		#################################################
 		#print('>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths))
 		#print('>> Clone #%s slings %s at Target #%s (of %s)' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),num_paths))
-		#print('>> Clone #%s -- slings --> Target #%s / %s' % (str(rank).zfill(zlen_rank),str(i+1).zfill(zlen),num_paths))
+		if not progress_bar: print('>> Clone #%s -- slings --> Target #%s / %s' % (str(rank).zfill(zlen_rank),str(i+1).zfill(zlen),num_paths))
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
