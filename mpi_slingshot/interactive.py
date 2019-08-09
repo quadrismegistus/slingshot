@@ -7,12 +7,21 @@ from .slingshot import is_csv
 from six.moves import input
 import imp,inspect
 
+
+
+
+
 def interactive(parser, SLING_EXT=['py','R','ipynb']):
 	slings=None
 	import readline
 	from .tab_completer import tabCompleter
 	tabber=tabCompleter()
 	args=parser.parse_args()
+	args.sling=args.code
+	args.stone=args.func
+	args.stone_args=args.args
+
+
 	readline.set_completer_delims('\t')
 	if 'libedit' in readline.__doc__:
 		readline.parse_and_bind("bind ^I rl_complete")
@@ -21,104 +30,112 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 
 	arg2help=dict([(x.dest,x.help) for x in parser.__dict__['_actions']])
 
-	print(SLINGSHOT)
-	longest_line = max(len(line.rstrip()) for line in SLINGSHOT.split('\n'))
-	HR='\n'+'-'*longest_line+'\n'
-	#print "### SLINGSHOT v0.1 ###"
-	print("## SLINGSHOT v0.1: interactive mode (see \"slingshot --help\" for more)")
-	#print parser.format_help()
+	opener_printed=False
+
+	def print_opener():
+		print(SLINGSHOT)
+		longest_line = max(len(line.rstrip()) for line in SLINGSHOT.split('\n'))
+		HR='\n'+'-'*longest_line+'\n'
+		#print "### SLINGSHOT v0.1 ###"
+		print("## SLINGSHOT v0.1: interactive mode (see \"slingshot --help\" for more)")
+		#print parser.format_help()
+		opener_printed=True
 
 	try:
-		# SLING
-		path_slings = CONFIG.get('PATH_SLINGS','')
-		SLING_EXT = CONFIG.get('SLING_EXT','')
-		if path_slings and os.path.exists(path_slings) and os.path.isdir(path_slings):
-			slings=sorted([fn for fn in os.listdir(path_slings) if fn.split('.')[-1] in SLING_EXT])
-			#sling_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
-			sling_str='  '+'\n            '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
-		while not args.sling:
-			readline.set_completer(tabber.pathCompleter)
-			print('\n>> SLING: '+arg2help['sling'])
-			if path_slings and slings:
-				print('          [numerical shortcuts for slings found in\n          [{dir}]\n          {slings}'.format(dir=path_slings, slings=sling_str))
-			sling = input('>> ').strip()
-			if sling.isdigit() and 0<=int(sling)-1<len(slings):
-				args.sling=os.path.join(path_slings,slings[int(sling)-1])
-			elif not os.path.exists(sling):
-				print("!! filename does not exist")
-			elif not sling.split('.')[-1] in SLING_EXT:
-				print("!! filename does not end in one of the acceptable file extensions [%s]" % ', '.join(SLING_EXT))
+		functions_str=''
+		if not args.llp_method:
+			# SLING
+			path_slings = CONFIG.get('PATH_SLINGS','')
+			SLING_EXT = CONFIG.get('SLING_EXT','')
+			if path_slings and os.path.exists(path_slings) and os.path.isdir(path_slings):
+				slings=sorted([fn for fn in os.listdir(path_slings) if fn.split('.')[-1] in SLING_EXT])
+				#sling_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
+				sling_str='  '+'\n            '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(slings)])
+			while not args.sling:
+				readline.set_completer(tabber.pathCompleter)
+				if not opener_printed: print_opener()
+				print('\n>> CODE ("Sling"): '+arg2help['code'])
+				if path_slings and slings:
+					print('          [numerical shortcuts for slings found in\n          [{dir}]\n          {slings}'.format(dir=path_slings, slings=sling_str))
+				sling = input('>> ').strip()
+				if sling.isdigit() and 0<=int(sling)-1<len(slings):
+					args.sling=os.path.join(path_slings,slings[int(sling)-1])
+				elif not os.path.exists(sling):
+					print("!! filename does not exist")
+				elif not sling.split('.')[-1] in SLING_EXT:
+					print("!! filename does not end in one of the acceptable file extensions [%s]" % ', '.join(SLING_EXT))
+				else:
+					args.sling=sling
+
+			# STONE
+			print(HR)
+			if args.sling.endswith('.py'):
+				sling = imp.load_source('sling', args.sling)
+				# functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
+				# functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
+				# tabber.createListCompleter(functions)
+			elif args.sling.endswith('.ipynb'):
+				import nbimporter
+				nbimporter.options['only_defs'] = CONFIG.get('NBIMPORTER_ONLY_DEFS',False)
+				ppath,pfn = os.path.split(args.sling)
+				pname,pext = os.path.splitext(pfn)
+				NBL = nbimporter.NotebookLoader(path=[ppath])
+				sling = NBL.load_module(pname)
 			else:
-				args.sling=sling
+				sling = None
+				functions_str=''
 
-		# STONE
-		print(HR)
-		if args.sling.endswith('.py'):
-			sling = imp.load_source('sling', args.sling)
-			# functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
-			# functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
-			# tabber.createListCompleter(functions)
-		elif args.sling.endswith('.ipynb'):
-			import nbimporter
-			nbimporter.options['only_defs'] = CONFIG.get('NBIMPORTER_ONLY_DEFS',False)
-			ppath,pfn = os.path.split(args.sling)
-			pname,pext = os.path.splitext(pfn)
-			NBL = nbimporter.NotebookLoader(path=[ppath])
-			sling = NBL.load_module(pname)
-		else:
-			sling = None
-			functions_str=''
-
-		if sling:
-			functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
-			functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
-			tabber.createListCompleter(functions)
+			if sling:
+				functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
+				functions_str='  '.join(['(%s) %s' % (si+1, sl) for si,sl in enumerate(functions)])
+				tabber.createListCompleter(functions)
 
 
-		while not args.stone:
+			while not args.stone:
 
-			#prompt='\n>> STONE: {help}\noptions: {opts}\n>>'.format(help=arg2help['stone'], opts=', '.join(functions))
-			#prompt='\n>> STONE: {help}\n>>'.format(help=arg2help['stone'])
-			print('>> STONE: '+arg2help['stone'])
-			#print '          [options]: '+functions_str
-			if functions_str:
-				readline.set_completer(tabber.listCompleter)
-				print('          '+functions_str)
-			stone = input('>> ').strip()
-			if stone.isdigit() and 0<=int(stone)-1<len(functions):
-				args.stone=functions[int(stone)-1]
-			elif functions_str and not stone in functions:
-				print("!! function not in file")
-			else:
-				args.stone=stone
+				#prompt='\n>> STONE: {help}\noptions: {opts}\n>>'.format(help=arg2help['stone'], opts=', '.join(functions))
+				#prompt='\n>> STONE: {help}\n>>'.format(help=arg2help['stone'])
+				print('>> FUNC ("Stone"): '+arg2help['func'])
+				#print '          [options]: '+functions_str
+				if functions_str:
+					readline.set_completer(tabber.listCompleter)
+					print('          '+functions_str)
+				stone = input('>> ').strip()
+				if stone.isdigit() and 0<=int(stone)-1<len(functions):
+					args.stone=functions[int(stone)-1]
+				elif functions_str and not stone in functions:
+					print("!! function not in file")
+				else:
+					args.stone=stone
 
 		# PATH
-
-		try:
-			import llp
-			import pandas as pd
-			print('>> CORPUS: Type the number or name of an LLP corpus')
-			num2cname={}
-			for ci,(corpus,cdx) in enumerate(sorted(llp.corpus.load_manifest().items())):
-				num2cname[ci+1]=corpus
-				print('\t({num}) {name} ({desc})'.format(num=str(ci+1).zfill(2), desc=cdx['desc'], name=cdx['name']))
-			#pd.options.display.max_colwidth = 100
-			#print(pd.DataFrame(llp.corpus.load_manifest()).T[['desc']])
-			llp_input = input('>> ').strip()
-			if llp_input.strip().isdigit():
-				cnum=int(llp_input.strip())
-				if cnum in num2cname:
-					cname=num2cname[cnum]
-					if corpus: args.llp_corpus=cname
-			else:
-				#corpus=llp.load_corpus(llp_input)
-				#if corpus: args.llp_corpus=corpus
-				args.llp_corpus=llp_input.strip()
-
-		except ImportError:
-			pass
-
 		if not args.llp_corpus:
+
+			try:
+				import llp
+				import pandas as pd
+				print('>> CORPUS: Type the number or name of an LLP corpus')
+				num2cname={}
+				for ci,(corpus,cdx) in enumerate(sorted(llp.corpus.load_manifest().items())):
+					num2cname[ci+1]=corpus
+					print('\t({num}) {name} ({desc})'.format(num=str(ci+1).zfill(2), desc=cdx['desc'], name=cdx['name']))
+				#pd.options.display.max_colwidth = 100
+				#print(pd.DataFrame(llp.corpus.load_manifest()).T[['desc']])
+				llp_input = input('>> ').strip()
+				if llp_input.strip().isdigit():
+					cnum=int(llp_input.strip())
+					if cnum in num2cname:
+						cname=num2cname[cnum]
+						if corpus: args.llp_corpus=cname
+				else:
+					#corpus=llp.load_corpus(llp_input)
+					#if corpus: args.llp_corpus=corpus
+					args.llp_corpus=llp_input.strip()
+
+			except ImportError:
+				pass
+
+
 			print(HR)
 			path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 			opener='>> PATH: '
@@ -150,11 +167,15 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 				else:
 					args.path=path
 
-		print(HR)
-		print('OPTIONAL SECTION')
+
+		if opener_printed:
+			longest_line = max(len(line.rstrip()) for line in SLINGSHOT.split('\n'))
+			HR='\n'+'-'*longest_line+'\n'
+			print(HR)
+			print('OPTIONAL SECTION')
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
 		#default_savedir='/'.join(['results_slingshot',module,args.stone,now()])
-		default_savedir='/'.join(['results_slingshot',module,args.stone])
+		#default_savedir='/'.join(['results_slingshot',module,args.stone])
 
 		#args.nosave = input('\n>> SAVE: Save results? [Y]\n>> (Y/N) ').strip().lower()=='n'
 		args.nosave = False

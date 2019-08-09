@@ -26,17 +26,16 @@ if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_stone_is_method=False):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method=''):
 	"""
 	Main function
 	"""
 
 	# Load code-sling and stone-function
-	if not stone:
-		if not llp_stone_is_method:
-			stone=load_stone_in_sling(path_sling,stone_name)
-			if not stone:
-				return
+	if not stone and not llp_method:
+		stone=load_stone_in_sling(path_sling,stone_name)
+		if not stone:
+			return
 
 	# One shot?
 	if oneshot:
@@ -49,7 +48,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
 			#print(llp_corpus, corpus)
-			all_paths = [(text if (llp_pass_text or llp_stone_is_method) else text.path) for text in corpus.texts()]
+			all_paths = [(text if (llp_pass_text or llp_method) else text.path) for text in corpus.texts()]
 			#print(all_paths[:10])
 		except ImportError:
 			pass
@@ -113,8 +112,9 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	pronoun='their'
 	zlen=len(str(num_paths))
 	zlen_rank=len(str(size))
+	from tqdm import tqdm
 
-	for i,(path,run) in enumerate(paths):
+	for i,(path,run) in enumerate(tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank).zfill(3),position=rank,ncols=200,mininterval=1.0)):
 		#################################################
 		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
@@ -122,13 +122,11 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		#sling_kwargs2['results_dir']=results_dir
 		if num_runs>1: sling_kwargs2['run']=run
 
-		if llp_stone_is_method:
+		if llp_method:
 			text = path
 			path = text.addr
-			stone = getattr(text,stone_name)
+			stone = getattr(text,llp_method)
 			result = stone(*sling_args,**sling_kwargs2)
-
-			#print('!',type(result),result)
 
 		else:
 			try:
@@ -151,7 +149,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		#################################################
 		#print('>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths))
 		#print('>> Clone #%s slings %s at Target #%s (of %s)' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),num_paths))
-		print('>> Clone #%s -- slings --> Target #%s / %s' % (str(rank).zfill(zlen_rank),str(i+1).zfill(zlen),num_paths))
+		#print('>> Clone #%s -- slings --> Target #%s / %s' % (str(rank).zfill(zlen_rank),str(i+1).zfill(zlen),num_paths))
 	if cache_writer: cache_writer.close()
 
 	# Gather the results

@@ -6,6 +6,7 @@ from __future__ import print_function
 
 #PYTHON_PATH='python3'
 PYTHON_PATH='python'
+DEFAULT_DATA_FOLDER = 'data_slingshot'
 
 import os,argparse,sys
 
@@ -19,6 +20,7 @@ def now(now=None,seconds=False):
 	return '{0}{1}{2}-{3}{4}{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),'-'+str(now.second).zfill(2) if seconds else '')
 
 def has_minimal_info(args):
+	if args.llp_method and args.llp_corpus: return True
 	if not args.sling: return False
 	if not args.stone: return False
 	if not (args.pathlist or args.path or args.llp_corpus): return False
@@ -27,9 +29,10 @@ def has_minimal_info(args):
 if __name__ == '__main__':
 	# parse arguments
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-sling','-code',help="Path to the python or R file of code (ending in .py or .R)")
-	parser.add_argument('-stone','-func',help='The name of the function in the code that takes a string filepath')
-	parser.add_argument('-stone_args','-args',help='Any other arguments for the stone function? (JSON)',default='')
+	parser.add_argument('-code','-sling',help="Path to the python or R file of code (ending in .py or .R)")
+	parser.add_argument('-func','-stone',help='The name of the function in the code that takes a string filepath')
+	parser.add_argument('-args','-stone_args',help='Positional arguments for the function? (JSON-formatted list)',default='')
+	parser.add_argument('-kwargs','-stone_kwargs',help='Keyword arguments for the function? (JSON-formatted dictionary)',default='')
 
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-pathkey',help='If text file given is a TSV, which column is the path located under?',default='')
@@ -45,7 +48,7 @@ if __name__ == '__main__':
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
 	parser.add_argument('-oneshot',help='Just pass the `path` to the function (useful for postprocessing in sbatch)',action='store_true')
 
-	parser.add_argument('-kwargs',help='Keyword arguments to sling (use JSON syntax)',default='')
+
 
 	parser.add_argument('-numruns',help='Number of times to slingshot each path (e.g. to gen multiple word2vec models per period)',default=1)
 
@@ -64,15 +67,13 @@ if __name__ == '__main__':
 	parser.add_argument('-sbatch_args',help='Any other arguments for SLURM?',default='')
 	args = parser.parse_args()
 
+	args.sling=args.code
+	args.stone=args.func
+	args.stone_args=args.args
+
 	# If no arguments... go into interactive mode!
 
 	# Load slingshot
-	if args.llp_method:
-		args.sling='true'
-		args.stone = args.llp_method
-		llp_stone_is_method = True
-	else:
-		llp_stone_is_method = False
 
 	if len(sys.argv)<2 or not has_minimal_info(args):
 		from mpi_slingshot.interactive import interactive
@@ -90,14 +91,20 @@ if __name__ == '__main__':
 
 
 
-	if (not args.llp_method and not args.sling) or not args.stone:
+	if not has_minimal_info(args):
 		if not args.sling: print("error: -sling SLING must be specified")
 		if not args.stone: print("error: -stone STONE must be specified")
 		print()
 		parser.print_help()
 		sys.exit(1)
 
-	Scmd = 'slingshot -sling {sling} -stone {stone}'.format(sling=args.sling, stone=args.stone)
+	Scmd = 'slingshot'
+	if args.code: Scmd+=' -code '+args.code
+	elif args.sling: Scmd+=' -sling '+args.sling
+
+	if args.func: Scmd+=' -func '+args.func
+	elif args.stone: Scmd+=' -stone '+args.stone
+
 	if args.oneshot:
 		args.parallel=1
 		args.nosave=True
@@ -125,6 +132,8 @@ if __name__ == '__main__':
 		if args.pathprefix: Scmd+=' -pathprefix "%s"' % args.pathprefix
 		if args.pathsuffix: Scmd+=' -pathsuffix "%s"' % args.pathsuffix
 
+	if args.llp_method:
+		Scmd+=' -llp_method %s' % args.llp_method
 
 	if args.sbatch_args: Scmd+=' -sbatch_args "%s"' % args.sbatch_args
 
@@ -138,11 +147,21 @@ if __name__ == '__main__':
 	# Other options
 	limit = int(args.limit) if args.limit else None
 	savedir=args.savedir
+
 	if not savedir:
-		#basename_path_source=os.path.basename(path_source)
-		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
-		#savedir='/'.join(['results_slingshot',module,args.stone,now()])
-		savedir='/'.join(['results_slingshot',module+'__'+args.stone])
+		if args.sling:
+			#module='.'.join(os.path.basename(args.sling).split('.')[:-1])
+			savedir=os.path.join(DEFAULT_DATA_FOLDER,args.stone)
+		elif args.llp_method and args.llp_corpus:
+			savedir=os.path.join(DEFAULT_DATA_FOLDER,args.llp_method)
+
+
+	if os.path.exists(savedir):
+		savedirnum=2
+		while os.path.exists(savedir + str(savedirnum)):
+			savedirnum+=1
+		savedir = savedir + str(savedirnum)
+
 	if not os.path.exists(savedir): os.makedirs(savedir)
 	out_fnfn=os.path.join(savedir,'output.txt')
 	err_fnfn=os.path.join(savedir,'errors.txt')
@@ -172,7 +191,7 @@ if __name__ == '__main__':
 
 
 	# Execute!
-	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_stone_is_method={llp_stone_is_method},llp_pass_text={llp_pass_text})" """.format(
+	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text})" """.format(
 		python_command=PYTHON_PATH,
 		sling=args.sling,
 		stone=args.stone,
@@ -191,7 +210,7 @@ if __name__ == '__main__':
 		stone_args_json=stone_args,
 		sling_kwargs=sling_kwargs,
 		llp_corpus=args.llp_corpus,
-		llp_stone_is_method=llp_stone_is_method,
+		llp_method=args.llp_method,
 		llp_pass_text=args.llp_pass_text
 		#sling_args=sling_args
 	)
@@ -238,7 +257,6 @@ if __name__ == '__main__':
 	if args.parallel: Scmd+=' -parallel %s' % args.parallel
 	if args.debug: Scmd+=' -debug'
 	if args.quiet: Scmd+=' -quiet'
-	if llp_stone_is_method: Scmd+=' -llp_stone_is_method'
 	if args.llp_pass_text: Scmd+=' -llp_pass_text'
 
 	otxt='>> SLINGSHOT COMMAND:\n{Scmd}\n\n>> EXECUTING COMMAND:\n{command}\n'.format(Scmd=Scmd,command=command)
