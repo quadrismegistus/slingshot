@@ -28,7 +28,7 @@ TXT_MAXCOLS=25000
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method=''):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False):
 	"""
 	Main function
 	"""
@@ -114,9 +114,14 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	pronoun='their'
 	zlen=len(str(num_paths))
 	zlen_rank=len(str(size))
-	from tqdm import tqdm
 
-	for i,(path,run) in enumerate(tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100,mininterval=1.0)):
+	if progress_bar:
+		from tqdm import tqdm
+		looper=tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100,mininterval=1.0)
+	else:
+		looper=paths
+
+	for i,(path,run) in enumerate(looper):
 		#################################################
 		# THIS IS WHERE THE STONE FITS INTO THE SLINGSHOT
 
