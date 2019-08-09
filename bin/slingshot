@@ -27,9 +27,9 @@ def has_minimal_info(args):
 if __name__ == '__main__':
 	# parse arguments
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-sling',help="Path to the python or R file of code (ending in .py or .R)")
-	parser.add_argument('-stone',help='The name of the function in the code that takes a string filepath')
-	parser.add_argument('-stone_args',help='Any other arguments for the stone function? (JSON)',default='')
+	parser.add_argument('-sling','-code',help="Path to the python or R file of code (ending in .py or .R)")
+	parser.add_argument('-stone','-func',help='The name of the function in the code that takes a string filepath')
+	parser.add_argument('-stone_args','-args',help='Any other arguments for the stone function? (JSON)',default='')
 
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-pathkey',help='If text file given is a TSV, which column is the path located under?',default='')
@@ -38,7 +38,8 @@ if __name__ == '__main__':
 	parser.add_argument('-path',help='A directory where files ending with -ext EXT will be considered the paths [is recursive]')
 
 	parser.add_argument('-llp_corpus',help='Specify a corpus name (requires Literary Language Processing module)')
-
+	parser.add_argument('-llp_method',help='A method on the LLP text object')
+	parser.add_argument('-llp_pass_text',help='Pass the LLP text object itself, not the path',action='store_true')
 
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
@@ -65,6 +66,13 @@ if __name__ == '__main__':
 
 	# If no arguments... go into interactive mode!
 
+	# Load slingshot
+	if args.llp_method:
+		args.sling='true'
+		args.stone = args.llp_method
+		llp_stone_is_method = True
+	else:
+		llp_stone_is_method = False
 
 	if len(sys.argv)<2 or not has_minimal_info(args):
 		from mpi_slingshot.interactive import interactive
@@ -80,8 +88,9 @@ if __name__ == '__main__':
 			default=parser.get_default(argname)
 			setattr(args,argname,default)
 
-	# Load slingshot
-	if not args.sling or not args.stone:
+
+
+	if (not args.llp_method and not args.sling) or not args.stone:
 		if not args.sling: print("error: -sling SLING must be specified")
 		if not args.stone: print("error: -stone STONE must be specified")
 		print()
@@ -163,7 +172,7 @@ if __name__ == '__main__':
 
 
 	# Execute!
-	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}')" """.format(
+	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_stone_is_method={llp_stone_is_method},llp_pass_text={llp_pass_text})" """.format(
 		python_command=PYTHON_PATH,
 		sling=args.sling,
 		stone=args.stone,
@@ -181,7 +190,9 @@ if __name__ == '__main__':
 		oneshot=args.oneshot,
 		stone_args_json=stone_args,
 		sling_kwargs=sling_kwargs,
-		llp_corpus=args.llp_corpus
+		llp_corpus=args.llp_corpus,
+		llp_stone_is_method=llp_stone_is_method,
+		llp_pass_text=args.llp_pass_text
 		#sling_args=sling_args
 	)
 
@@ -227,7 +238,8 @@ if __name__ == '__main__':
 	if args.parallel: Scmd+=' -parallel %s' % args.parallel
 	if args.debug: Scmd+=' -debug'
 	if args.quiet: Scmd+=' -quiet'
-
+	if llp_stone_is_method: Scmd+=' -llp_stone_is_method'
+	if args.llp_pass_text: Scmd+=' -llp_pass_text'
 
 	otxt='>> SLINGSHOT COMMAND:\n{Scmd}\n\n>> EXECUTING COMMAND:\n{command}\n'.format(Scmd=Scmd,command=command)
 	with open(cmd_fnfn,'w') as f: f.write(otxt)

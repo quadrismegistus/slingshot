@@ -26,30 +26,31 @@ if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,stream_results=True,save_txt=True,txt_maxcols=10000,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_stone_is_method=False):
 	"""
 	Main function
 	"""
 
 	# Load code-sling and stone-function
 	if not stone:
-		stone=load_stone_in_sling(path_sling,stone_name)
-		if not stone:
-			return
+		if not llp_stone_is_method:
+			stone=load_stone_in_sling(path_sling,stone_name)
+			if not stone:
+				return
 
-	# Load paths
+	# One shot?
 	if oneshot:
 		return stone(path_source,*sling_args,**sling_kwargs)
 
-
+	# Load paths
 	all_paths = None
 	if llp_corpus and llp_corpus!='None':
 		try:
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
-			print(llp_corpus, corpus)
-			all_paths = [text.path for text in corpus.texts()]
-			print(all_paths[:10])
+			#print(llp_corpus, corpus)
+			all_paths = [(text if (llp_pass_text or llp_stone_is_method) else text.path) for text in corpus.texts()]
+			#print(all_paths[:10])
 		except ImportError:
 			pass
 
@@ -121,10 +122,19 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		#sling_kwargs2['results_dir']=results_dir
 		if num_runs>1: sling_kwargs2['run']=run
 
-		try:
-			result=stone(path,*sling_args,**sling_kwargs2)
-		except TypeError:
-			result=stone(path,*sling_args,**sling_kwargs)
+		if llp_stone_is_method:
+			text = path
+			path = text.addr
+			stone = getattr(text,stone_name)
+			result = stone(*sling_args,**sling_kwargs2)
+
+			#print('!',type(result),result)
+
+		else:
+			try:
+				result=stone(path,*sling_args,**sling_kwargs2)
+			except TypeError:
+				result=stone(path,*sling_args,**sling_kwargs)
 
 		if result is not None:
 			path_result=(path,result)
@@ -176,7 +186,10 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path_source):
 	with open(results_fnfn_pathlist,'w') as of:
 		for (path,run) in paths:
-			of.write(path+'\n')
+			try:
+				of.write(path+'\n')
+			except TypeError:
+				of.write(path.addr + '\n')
 
 	path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 	pathlist_path_source = os.path.join(path_pathlists,path_source if path_source else '')
