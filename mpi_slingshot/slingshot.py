@@ -193,9 +193,9 @@ def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path
 	with open(results_fnfn_pathlist,'w') as of:
 		for (path,run) in paths:
 			try:
-				of.write(path+'\n')
+				of.write(str(path)+'\n')
 			except TypeError:
-				of.write(path.addr + '\n')
+				of.write(str(path.addr) + '\n')
 
 	path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 	pathlist_path_source = os.path.join(path_pathlists,path_source if path_source else '')
