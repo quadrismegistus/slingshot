@@ -22,6 +22,7 @@ if not PATH_KEY: PATH_KEY=DEFAULT_PATH_KEY
 if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
 TXT_MAXCOLS=25000
+from smart_open import open
 
 
 
@@ -338,7 +339,7 @@ def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_p
 
 
 
-def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols=TXT_MAXCOLS):
+def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols=TXT_MAXCOLS,sep='\t'):
 	now=time.time()
 
 	# First find KEYS
@@ -354,19 +355,19 @@ def save_results_txt(results_fnfn_txt,path_cache,txt_maxcols=TXT_MAXCOLS):
 	if txt_maxcols: KEYS={x for x,y in Count.most_common(txt_maxcols)}
 
 	then,now=now,time.time()
-	print('>> save_txt: found keys in %ss' % int(now-then))
-	print(KEYS)
+	print('>> save_txt: found %s keys in %ss' % (len(KEYS),int(now-then)))
+	print(list(KEYS)[:100],'...')
 
 	if KEYS:
 		# Then loop again to write
 		header=['_path']+sorted([six.text_type(x) for x in KEYS])
-		with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:#, jsonlines.open(results_fnfn_json) as reader:
-			results_f_txt.write('\t'.join(header) + '\n')
-			#for path,result in reader.iter(skip_invalid=True):
+		#with codecs.open(results_fnfn_txt,'w',encoding='utf-8') as results_f_txt:#, jsonlines.open(results_fnfn_json) as reader:
+		with open(results_fnfn_txt,'w') as results_f_txt:
+			results_f_txt.write(sep.join(header) + '\n')
 			for path,result in stream_results(path_cache,flatten=True):
 				result['_path']=path
-				orow=[six.text_type(result.get(h,'')) for h in header]
-				results_f_txt.write('\t'.join(orow) + '\n')
+				orow=[str(result.get(h,'')).replace(sep,' ').replace('\r\n',' ').replace('\r',' ').replace('\n',' ') for h in header]
+				results_f_txt.write(sep.join(orow) + '\n')
 			print('>> saved:',results_fnfn_txt)
 			then,now=now,time.time()
 			print('>> save_txt: saved in %ss' % int(now-then))
@@ -396,18 +397,23 @@ def stream_results(path_cache,ext='.jsonl',flatten=False):
 		for fn in sorted(os.listdir(path_cache)):
 			if (not fn.endswith(ext) and not fn.endswith(ext+'.gz')): continue
 			fnfn=os.path.join(path_cache,fn)
-			print('>> streaming:',fnfn,'...')
+			#print('>> streaming:',fnfn,'...')
 			for path,data in stream_jsonl(fnfn,flatten=flatten):
 				#if '.ipynb' in path: continue
 				yield (path,data)
 
 
-def stream_jsonl(fn,flatten=False):
+def stream_jsonl(fn,flatten=False,progress=True):
 	#from xopen import xopen
 	import ujson as json
+	if progress: from tqdm import tqdm
+
 	#with xopen(fn) as f:
+	print('>> [Slingshot] streaming:',fn,'...')
+	if progress: num_lines = get_num_lines(fn)
 	with open(fn) as f:
-		for ln in f:
+		looper = tqdm(f,total=num_lines) if progress else f
+		for ln in looper:
 			path,data=json.loads(ln)
 			if not flatten or type(data)!=list:
 				yield (path,data)
@@ -424,3 +430,20 @@ def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 			if not i: of.write('\t'.join(header) + '\n')
 			of.write('\t'.join([six.text_type(dx.get(h,'')) for h in header]) + '\n')
 	print('>> saved:',fnfn)
+
+
+
+
+def get_num_lines(filename):
+	from smart_open import open
+
+	def blocks(files, size=65536):
+		while True:
+			b = files.read(size)
+			if not b: break
+			yield b
+
+	with open(filename, 'r', errors='ignore') as f:
+		numlines=sum(bl.count("\n") for bl in blocks(f))
+
+	return numlines
