@@ -20,7 +20,7 @@ setup(
     author='Ryan Heuser',
     author_email='heuser@stanford.edu',
     url='https://github.com/quadrismegistus/mpi-slingshot',
-    license='MPL-2.0',
+    license='MIT',
     packages=setuptools.find_packages(),
     install_requires=requirements,
     scripts=['bin/slingshot'],
