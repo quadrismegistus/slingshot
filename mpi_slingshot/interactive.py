@@ -68,7 +68,7 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 					args.sling=sling
 
 			# STONE
-			print(HR)
+			#print('-'*40)
 			if args.sling.endswith('.py'):
 				sling = imp.load_source('sling', args.sling)
 				# functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
