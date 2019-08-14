@@ -132,6 +132,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		if num_runs>1: sling_kwargs2['run']=run
 
 		if llp_method:
+			print(llp_method)
 			text = path
 			path = text.addr
 			stone = getattr(text,llp_method)
@@ -409,7 +410,7 @@ def stream_jsonl(fn,flatten=False,progress=True):
 	if progress: from tqdm import tqdm
 
 	#with xopen(fn) as f:
-	print('>> [Slingshot] streaming:',fn,'...')
+	#print('>> [Slingshot] streaming:',fn,'...')
 	if progress: num_lines = get_num_lines(fn)
 	with open(fn) as f:
 		looper = tqdm(f,total=num_lines) if progress else f
@@ -447,3 +448,27 @@ def get_num_lines(filename):
 		numlines=sum(bl.count("\n") for bl in blocks(f))
 
 	return numlines
+
+
+
+
+
+def iter_move(fn,force=False,prefix=''):
+	if os.path.exists(fn):
+		iter_fn=iter_filename(fn,force=force,prefix=prefix)
+		iter_dir=os.path.dirname(iter_fn)
+		if not os.path.exists(iter_dir): os.makedirs(iter_dir)
+		shutil.move(fn,iter_fn)
+		print(f'>> moved: {fn} --> {iter_fn}')
+
+def iter_filename(fnfn,force=False,prefix='',inbetweener='_'):
+	if os.path.exists(fnfn) or force:
+		fndir,fn=os.path.split(fnfn)
+		filename,ext = os.path.splitext(fn)
+		fnum=2 if not force else 1
+		maybe_fn=os.path.join(fndir, prefix + filename + ext)
+		while os.path.exists(maybe_fn):
+			fnum+=1
+			maybe_fn=os.path.join(fndir, prefix + filename + inbetweener + str(fnum) + ext)
+		fnfn = maybe_fn
+	return fnfn

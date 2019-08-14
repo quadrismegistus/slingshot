@@ -3,9 +3,12 @@ from __future__ import print_function
 import os,imp,argparse,sys
 from .logos import SLINGSHOT
 from .config import CONFIG
-from .slingshot import is_csv
+from .slingshot import *
 from six.moves import input
 import imp,inspect
+longest_line = max(len(line.rstrip()) for line in SLINGSHOT.split('\n'))
+HR='\n'+'-'*longest_line+'\n'
+
 
 
 
@@ -68,7 +71,9 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 					args.sling=sling
 
 			# STONE
-			#print('-'*40)
+			longest_line = max(len(line.rstrip()) for line in SLINGSHOT.split('\n'))
+			HR='\n'+'-'*longest_line+'\n'
+			print(HR)
 			if args.sling.endswith('.py'):
 				sling = imp.load_source('sling', args.sling)
 				# functions = sling.STONES if hasattr(sling,'STONES') and sling.STONES else sorted([x for x,y in inspect.getmembers(sling, inspect.isfunction)])
@@ -109,19 +114,28 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 					args.stone=stone
 
 		# PATH
+
 		if not args.llp_corpus:
+			print(HR)
+			num2cname={}
 
 			try:
 				import llp
 				import pandas as pd
-				print('>> CORPUS: Type the number or name of an LLP corpus')
-				num2cname={}
+				#print('>> CORPUS: Type the number or name of an LLP corpus')
+				print('[LLP Corpus Library] (showing corpora with txt or xml folders installed)')
+				#print()
+
+				cnum=0
 				for ci,(corpus,cdx) in enumerate(sorted(llp.corpus.load_manifest().items())):
-					num2cname[ci+1]=corpus
-					print('\t({num}) {name} ({desc})'.format(num=str(ci+1).zfill(2), desc=cdx['desc'], name=cdx['name']))
+					if not os.path.exists(cdx['path_txt']) and not os.path.exists(cdx['path_xml']): continue
+					cnum+=1
+					num2cname[cnum]=corpus
+					print('\t({num}) {name} ({desc})'.format(num=str(cnum), desc=cdx['desc'], name=cdx['name']))  #.zfill(2).replace('0','')
 				#pd.options.display.max_colwidth = 100
 				#print(pd.DataFrame(llp.corpus.load_manifest()).T[['desc']])
-				llp_input = input('>> ').strip()
+				print()
+				"""llp_input = input('>> ').strip()
 				if llp_input.strip().isdigit():
 					cnum=int(llp_input.strip())
 					if cnum in num2cname:
@@ -130,30 +144,29 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 				else:
 					#corpus=llp.load_corpus(llp_input)
 					#if corpus: args.llp_corpus=corpus
-					args.llp_corpus=llp_input.strip()
+					args.llp_corpus=llp_input.strip()"""
 
 			except ImportError:
 				pass
 
 
-			print(HR)
-			path_pathlists = CONFIG.get('PATH_PATHLISTS','')
-			opener='>> PATH: '
+			#print(HR)
+
+			opener='>> CORPUS/PATH: '
 			opener_space=' '*len(opener)
 			pathlists_str=''
-			if path_pathlists and os.path.exists(path_pathlists) and os.path.isdir(path_pathlists):
-				pathlists=[fn for fn in os.listdir(path_pathlists) if not fn.startswith('.')]
-				joiner='\n'+opener_space
-				pathlists_str=''.join(['\n%s(%s) %s' % (opener_space,si+1, sl) for si,sl in enumerate(pathlists)])
-			while not args.path:
+			while not (args.path or args.llp_corpus):
 				readline.set_completer(tabber.pathCompleter)
-				#print opener+arg2help['stone']
-				print(opener+'Enter a path either to a pathlist text file, or to a directory of texts')
-				if path_slings and slings:
-					print('{space}[numerical shortcuts for pathlists found in\n{space}[{dir}]{pathlists}'.format(dir=path_slings, pathlists=pathlists_str,space=opener_space))
+				print(opener+'Please enter either ...\n'\
+				'	* a number to refer to an LLP corpus above\n' \
+				'	* a path to a folder, to find all files in that folder with a certain extension\n'\
+				'	* a path to a file, each line of which is the absolute path to another text file\n')
 				path = input('>> ').strip()
-				if path.isdigit() and 0<=int(path)-1<len(pathlists):
-					args.path=os.path.join(path_pathlists,pathlists[int(path)-1])
+				if path.isdigit():
+					cnum=int(path.strip())
+					if cnum in num2cname:
+						cname=num2cname[cnum]
+						if corpus: args.llp_corpus=cname
 				elif not os.path.exists(path):
 					print("!! filename or directory does not exist")
 				elif os.path.isdir(path):
@@ -171,17 +184,17 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 		if opener_printed:
 			longest_line = max(len(line.rstrip()) for line in SLINGSHOT.split('\n'))
 			HR='\n'+'-'*longest_line+'\n'
-			print(HR)
+			#print(HR)
 			print('OPTIONAL SECTION')
 		module='.'.join(os.path.basename(args.sling).split('.')[:-1])
 		#default_savedir='/'.join(['results_slingshot',module,args.stone,now()])
-		#default_savedir='/'.join(['results_slingshot',module,args.stone])
+		default_savedir='/'.join(['data_slingshot',args.stone+'_'+(args.llp_corpus if args.llp_corpus else os.path.basename(args.path))])
 
 		#args.nosave = input('\n>> SAVE: Save results? [Y]\n>> (Y/N) ').strip().lower()=='n'
 		args.nosave = False
 
 		if not args.nosave:
-			args.savedir = input('\n>> SAVEDIR: Directory to store results in [%s]' % default_savedir  + '\n>> ').strip()
+			args.savedir = iter_filename(input('\n>> SAVEDIR: Directory to store results in [%s]' % default_savedir  + '\n>> ').strip())
 			#args.cache = input('\n>> CACHE: Cache partial results? [Y]\n>> (Y/N) ').strip().lower()=='y'
 			args.cache = True
 			#mfw = input('\n>> MFW: %s' % arg2help['mfw'] + '\n>> ').strip()
@@ -193,9 +206,9 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 		args.limit = input('\n>> LIMIT: '+arg2help['limit']+' [None]\n>> ').strip()
 
 		args.sbatch = input('\n>> SBATCH: Add to the SLURM/Sherlock process queue via sbatch? [N]\n>> (Y/N) ').strip().lower()=='y'
-		if args.sbatch:
-			args.parallel = input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
 
+		args.parallel = input('\n>> PARALLEL: '+arg2help['parallel']+' [4]\n>> ').strip()
+		if args.sbatch:
 			hours = input('\n>> HOURS: '+arg2help['hours']+' [1]\n>> ').strip()
 			hours = ''.join([x for x in hours if x.isdigit()])
 			args.hours = parser.get_default('hours') if not hours else hours
@@ -211,7 +224,7 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 	except (KeyboardInterrupt,EOFError) as e:
 		print('\n>> goodbye')
 		exit()
-
+	
 	return args
 
 

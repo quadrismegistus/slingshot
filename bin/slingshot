@@ -64,7 +64,7 @@ if __name__ == '__main__':
 	parser.add_argument('-sbatch',help='Run on sherlock',action='store_true')
 	parser.add_argument('-hours',help='How many hours to ask sherlock for',default=1)
 	parser.add_argument('-mem',help='How much memory should each CPU have',default='2G')
-	parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=16)
+	parser.add_argument('-parallel',help='How many MPI tasks should run in parallel?',default=4)
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
 	parser.add_argument('-dryrun',help='Dry run: do not execute',action='store_true')
@@ -87,6 +87,10 @@ if __name__ == '__main__':
 		IS_INTERACTIVE=True
 	else:
 		IS_INTERACTIVE=False
+
+	for k,v in vars(args).items():
+		if v=='None' or v==None:
+			setattr(args,k,'')
 
 	# Set defaults if need be
 	todefaults=['parallel']
