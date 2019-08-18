@@ -68,8 +68,9 @@ if __name__ == '__main__':
 	parser.add_argument('-debug',help='Do not run on MPI and do not submit with sbatch',action='store_true')
 	parser.add_argument('-quiet',help='Do not print output to screen',action='store_true')
 	parser.add_argument('-dryrun',help='Dry run: do not execute',action='store_true')
+	parser.add_argument('-p',help='Partition to use on SLURM?',default='')
 	parser.add_argument('-sbatch_args',help='Any other arguments for SLURM?',default='')
-	parser.add_argument('-progress','-P',help='Show progress bar?',action='store_true')
+	parser.add_argument('-progress',help='Show progress bar?',action='store_true')
 	parser.add_argument('-overwrite','-force',help='Overwrite same savedir, do not iterate',action='store_true')
 	args = parser.parse_args()
 
@@ -247,7 +248,8 @@ if __name__ == '__main__':
 		# preserve env?
 		#sbatch+=' --preserve-env'
 		# sbatch args? @HACK FOR SHERLOCK @TODO fix?
-		sbatch+=' -p hns'
+		#sbatch+=' -p hns'
+		if args.p: sbatch+=' -p '+args.p
 
 		# v1
 		command = sbatch+' -n {n} -c 1 --mem-per-cpu {mem} -t {h}:00:00 --wrap="{cmd}"{other_args}'.format(mem=args.mem, n=args.parallel, h=str(args.hours).zfill(2), cmd=cmd, other_args=' '+ (args.sbatch_args.strip()) if args.sbatch_args else '')
