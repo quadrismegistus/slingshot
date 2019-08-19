@@ -12,6 +12,7 @@ from collections import defaultdict,Counter
 from .config import CONFIG
 import six
 from six.moves import range
+from tqdm import tqdm
 DEFAULT_PATH_KEY='_path'
 DEFAULT_EXT = 'txt'
 
@@ -23,13 +24,19 @@ if not PATH_EXT: PATH_EXT=DEFAULT_PATH_EXT
 
 TXT_MAXCOLS=25000
 from smart_open import open
-
+from tqdm import tqdm
 
 
 def slingshot_single_shot(stone,path):
 	return stone(path)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,do_stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv=''):
+def get_paths_already_finished_from_cache(cache_path):
+	for path,result in stream_results(cache_path,flatten=False):
+		if result:
+			yield path
+
+
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,do_stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv='',resume=False,overwrite=False,parallel=1):
 	"""
 	Main function
 	"""
@@ -51,61 +58,90 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
 			#print(llp_corpus, corpus)
-			all_paths = [(text if (llp_pass_text or llp_method) else text.path) for text in corpus.texts()][:limit]
+			all_paths = [(text.addr if (llp_pass_text or llp_method) else text.path) for text in corpus.texts()][:limit]
 			#print(all_paths[:10])
 		except ImportError:
 			pass
 
-	if not all_paths:
-		all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
+	# Get paths!
+	if not all_paths: all_paths = load_paths(path_source,path_ext,limit,shuffle_paths,path_key,path_prefix,path_suffix) if not paths else paths
 
+	# Break if these weren't returned
+	if not all_paths: return
+
+
+	# Report back
+	#print('>> [Slingshot] # of paths:',len(all_paths))
+
+	# Cache stuff
+	if not results_dir: results_dir=f'data_slingshot/{stone_name}'
+	if not cache_path: cache_path=os.path.join(results_dir,'cache')
+	if cache_results:
+		if overwrite and os.path.exists(cache_path): delete_files_from_folder(cache_path)
+		if overwrite and os.path.exists(results_dir): delete_files_from_folder(results_dir)
+		if not os.path.exists(cache_path): os.makedirs(cache_path)
+		if resume:
+			paths_done = set(list(get_paths_already_finished_from_cache(cache_path)))
+			print('\n>> [Slingshot] already finished %s paths' % len(paths_done))
+			all_paths=sorted(list(set(all_paths)-paths_done))
+			print('>> [Slingshot] # of paths:',len(all_paths))
+			if len(all_paths)==1: print(all_paths)
+
+	## RUNS?
 	# Multiply paths by runs
 	all_paths = [(path,run+1) for path in all_paths for run in range(num_runs)]
 
-	# Break if these weren't returned
-	if not all_paths:
-		#print '!!',[path_sling,stone_name,path_source,path_ext]
-		return
-
-	# Save cache dir
-	if cache_results and not cache_path:
-		if results_dir: cache_path=os.path.join(results_dir,'cache')
 
 
-	# Start MPI
-	from mpi4py import MPI
+
+
 	t1 = dt.now()
-	comm = MPI.COMM_WORLD
-	size = comm.Get_size()
-	rank = comm.Get_rank()
-	print('>> [Slingshot] initializing MPI with size %s and rank %s' % (size,rank))
+	if parallel < 2:
+		paths=all_paths
+		results=[]
+		looper=all_paths if not progress_bar else tqdm(all_paths,file=sys.stdout,desc='Slingshot',position=0,ncols=100)
+		if cache_results and cache_path:
+			cache_fn = 'results.jsonl'
+			cache_fnfn = os.path.join(cache_path,cache_fn)
+			cache_writer = open(cache_fnfn, mode='a+',encoding='utf-8')
+		rank = 0
 
-
-	# Am I the seed process?
-	if rank == 0:
-		# Make cache folder
-		if cache_results and cache_path and not os.path.exists(cache_path): os.makedirs(cache_path)
-
-		# Farm out paths to other processes
-		segments = np.array_split(all_paths,size) if size>1 else [all_paths]
-		print('>> [Slingshot]: %s paths divided into %s segments' % (len(all_paths), len(segments)))
-
-	# Or am I a process created by the seed?
 	else:
-		segments = None
+		# Start MPI
+		from mpi4py import MPI
 
-	# Scatter the segments (if rank is 0?)
-	segment = comm.scatter(segments, root=0)
+		comm = MPI.COMM_WORLD
+		size = comm.Get_size()
+		rank = comm.Get_rank()
+		if rank==0: print()
+		print('>> [Slingshot] initializing MPI with size %s and rank %s' % (size,rank))
 
-	# Parse the segment.
-	paths = segment
 
-	# cache results?
-	cache_writer=None
-	if cache_results and cache_path:
-		cache_fn = 'results.rank=%s.jsonl' % str(rank).zfill(4)
-		cache_fnfn = os.path.join(cache_path,cache_fn)
-		cache_writer=codecs.open(cache_fnfn, mode='w',encoding='utf-8')
+		# Am I the seed process?
+		if rank == 0:
+			# Farm out paths to other processes
+			segments = np.array_split(all_paths,size) if size>1 else [all_paths]
+			print('>> [Slingshot]: %s paths divided into %s segments' % (len(all_paths), len(segments)))
+
+		# Or am I a process created by the seed?
+		else:
+			segments = None
+
+		# Scatter the segments (if rank is 0?)
+		segment = comm.scatter(segments, root=0)
+
+		# Parse the segment.
+		paths = segment
+
+		# cache results?
+		cache_writer=None
+		if cache_results and cache_path:
+			cache_fn = 'results.rank=%s.jsonl' % str(rank).zfill(4)
+			cache_fnfn = os.path.join(cache_path,cache_fn)
+			cache_writer = open(cache_fnfn, mode='a+',encoding='utf-8')
+
+		#progress_bar=True
+		looper=paths if not progress_bar else tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100)
 
 
 
@@ -114,14 +150,9 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	num_paths=len(paths)
 	pronoun='their'
 	zlen=len(str(num_paths))
-	zlen_rank=len(str(size))
+	zlen_rank=3 #len(str(size))
 
-	#progress_bar=True
-	if progress_bar:
-		from tqdm import tqdm
-		looper=tqdm(paths,file=sys.stdout,desc='Slingshot-%s' % str(rank+1).zfill(3),position=rank,ncols=100)#,mininterval=1.0)
-	else:
-		looper=paths
+
 
 	for i,(path,run) in enumerate(looper):
 		#################################################
@@ -132,10 +163,14 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		if num_runs>1: sling_kwargs2['run']=run
 
 		if llp_method:
-			print(llp_method)
-			text = path
-			path = text.addr
-			stone = getattr(text,llp_method)
+			idx = path
+			try:
+				text = corpus.text(path)
+				path = text.addr
+				stone = getattr(text,llp_method)
+			except AttributeError as e:
+				print("!!",e)
+				return
 			result = stone(*sling_args,**sling_kwargs2)
 
 		else:
@@ -163,7 +198,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
-	RESULTS = comm.gather(results, root=0)
+	if parallel>1: RESULTS = comm.gather(results, root=0)
 
 	# If I am the seed process again
 	if rank == 0:
@@ -472,3 +507,14 @@ def iter_filename(fnfn,force=False,prefix='',inbetweener='_'):
 			maybe_fn=os.path.join(fndir, prefix + filename + inbetweener + str(fnum) + ext)
 		fnfn = maybe_fn
 	return fnfn
+
+
+
+
+def delete_files_from_folder(path,toprint=True):
+	if os.path.exists(path):
+		for root, dirs, files in os.walk(path):
+			for fn in files:
+				fnfn=os.path.join(root, fn)
+				os.unlink(fnfn)
+				if toprint: print('>> deleted:',fnfn)

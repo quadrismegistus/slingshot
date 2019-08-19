@@ -50,6 +50,8 @@ if __name__ == '__main__':
 	parser.add_argument('-limit',help='Limit the number of paths to process to this number')
 	parser.add_argument('-oneshot',help='Just pass the `path` to the function (useful for postprocessing in sbatch)',action='store_true')
 
+	# parser.add_argument('-from',help='Path to a cache or slingshot data directory')
+	# parser.add_argument('-to',help='Path to a file want to convert to')
 
 
 	parser.add_argument('-numruns',help='Number of times to slingshot each path (e.g. to gen multiple word2vec models per period)',default=1)
@@ -72,6 +74,7 @@ if __name__ == '__main__':
 	parser.add_argument('-sbatch_args',help='Any other arguments for SLURM?',default='')
 	parser.add_argument('-progress',help='Show progress bar?',action='store_true')
 	parser.add_argument('-overwrite','-force',help='Overwrite same savedir, do not iterate',action='store_true')
+	parser.add_argument('-resume',help='Resume progress in a savedir, do not start over',action='store_true')
 	args = parser.parse_args()
 
 	args.sling=args.code
@@ -167,17 +170,19 @@ if __name__ == '__main__':
 			savedir=os.path.join(DEFAULT_DATA_FOLDER,args.llp_method)
 
 
-	if os.path.exists(savedir) and not args.overwrite:
-		savedirnum=2
-		while os.path.exists(savedir + str(savedirnum)):
-			savedirnum+=1
-		savedir = savedir + str(savedirnum)
-
-	if not os.path.exists(savedir):
-		os.makedirs(savedir)
+	if os.path.exists(savedir):
+		if args.overwrite:
+			#import shutil
+			#shutil.rmtree(savedir)
+			pass
+		elif args.resume:
+			pass
+		else:
+			savedirnum=2
+			while os.path.exists(savedir + str(savedirnum)):
+				savedirnum+=1
+			savedir = savedir + '_' + str(savedirnum)
 	else:
-		import shutil
-		shutil.rmtree(savedir)
 		os.makedirs(savedir)
 
 	out_fnfn=os.path.join(savedir,'output.txt')
@@ -209,7 +214,7 @@ if __name__ == '__main__':
 
 
 	# Execute!
-	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text}, progress_bar={progress_bar}, savecsv='{savecsv}')" """.format(
+	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text}, progress_bar={progress_bar}, savecsv='{savecsv}', overwrite={overwrite}, resume={resume}, parallel={parallel})" """.format(
 		python_command=PYTHON_PATH,
 		sling=args.sling,
 		stone=args.stone,
@@ -232,6 +237,9 @@ if __name__ == '__main__':
 		llp_pass_text=args.llp_pass_text,
 		progress_bar=args.progress,
 		savecsv=args.savecsv,
+		overwrite=args.overwrite,
+		resume=args.resume,
+		parallel=args.parallel
 		#sling_args=sling_args
 	)
 
@@ -283,6 +291,7 @@ if __name__ == '__main__':
 	if args.overwrite: Scmd+=' -overwrite'
 
 	otxt='>> SLINGSHOT COMMAND:\n{Scmd}\n\n>> EXECUTING COMMAND:\n{command}\n'.format(Scmd=Scmd,command=command)
+	if not os.path.exists(os.path.dirname(cmd_fnfn)): os.makedirs(os.path.dirname(cmd_fnfn))
 	with open(cmd_fnfn,'w') as f: f.write(otxt)
 
 
@@ -292,10 +301,20 @@ if __name__ == '__main__':
 	if not IS_INTERACTIVE and not args.dryrun:
 		print('\n>> [Slingshot] starting at %s...' % now(seconds=True))
 		print('>> [Slingshot] executing:',Scmd)
-		#print(otxt)
+		print(otxt)
 		os.system(command)
 	else:
 		print('## In order to execute slingshot, you must paste in either of the following commands,')
 		print('## preferably the former: a custom argument syntax, which you can see at:')
 		print('## slingshot --help. ##')
 		print(otxt)
+
+
+
+def delete_files_from_folder(path,toprint=True):
+	if os.path.exists(path):
+		for root, dirs, files in os.walk(path):
+			for fn in files:
+				fnfn=os.path.join(root, fn)
+				os.unlink(fnfn)
+				if toprint: print('>> deleted:',fnfn)
