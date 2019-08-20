@@ -44,6 +44,7 @@ if __name__ == '__main__':
 
 	parser.add_argument('-llp_corpus',help='Specify a corpus name (requires Literary Language Processing module)')
 	parser.add_argument('-llp_method',help='A method on the LLP text object')
+	parser.add_argument('-llp_pass',help='Name of path or other text attribute to pass (path_txt, path_freqs, etc)')
 	parser.add_argument('-llp_pass_text',help='Pass the LLP text object itself, not the path',action='store_true')
 
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')
@@ -214,7 +215,7 @@ if __name__ == '__main__':
 
 
 	# Execute!
-	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text}, progress_bar={progress_bar}, savecsv='{savecsv}', overwrite={overwrite}, resume={resume}, parallel={parallel})" """.format(
+	command = """{python_command} -c "from mpi_slingshot import slingshot; slingshot(path_sling='{sling}', stone_name='{stone}', sling_kwargs={sling_kwargs}, path_source='{path_source}', path_ext='{path_ext}', path_key='{pathkey}', path_prefix='{path_prefix}', path_suffix='{path_suffix}', limit={limit}, oneshot={oneshot},results_dir='{savedir}', cache_results={cache}, save_results={tosave}, txt_maxcols={mfw}, num_runs={numruns}, llp_corpus='{llp_corpus}', llp_method='{llp_method}',llp_pass_text={llp_pass_text}, progress_bar={progress_bar}, savecsv='{savecsv}', overwrite={overwrite}, resume={resume}, parallel={parallel}, llp_pass_path='{llp_pass_path}')" """.format(
 		python_command=PYTHON_PATH,
 		sling=args.sling,
 		stone=args.stone,
@@ -239,7 +240,8 @@ if __name__ == '__main__':
 		savecsv=args.savecsv,
 		overwrite=args.overwrite,
 		resume=args.resume,
-		parallel=args.parallel
+		parallel=args.parallel,
+		llp_pass_path=args.llp_pass
 		#sling_args=sling_args
 	)
 

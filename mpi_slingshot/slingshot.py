@@ -36,7 +36,7 @@ def get_paths_already_finished_from_cache(cache_path):
 			yield path
 
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,do_stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv='',resume=False,overwrite=False,parallel=1):
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,do_stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv='',resume=False,overwrite=False,parallel=1,llp_pass_path='path'):
 	"""
 	Main function
 	"""
@@ -58,7 +58,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			import llp
 			corpus = llp.load_corpus(llp_corpus)
 			#print(llp_corpus, corpus)
-			all_paths = [(text.addr if (llp_pass_text or llp_method) else text.path) for text in corpus.texts()][:limit]
+			all_paths = [(text.addr if (llp_pass_text or llp_method) else getattr(text,llp_pass_path)) for text in corpus.texts()][:limit]
 			#print(all_paths[:10])
 			if shuffle_paths:
 				import random
