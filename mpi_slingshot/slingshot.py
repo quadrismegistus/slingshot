@@ -56,7 +56,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	if llp_corpus and llp_corpus!='None':
 		try:
 			import llp
-			print(llp,dir(llp))
+			#print(llp,dir(llp))
 			corpus = llp.load_corpus(llp_corpus)
 			#print(llp_corpus, corpus)
 			all_paths = [(text.addr if (llp_pass_text or llp_method) else getattr(text,llp_pass_path)) for text in corpus.texts()][:limit]
