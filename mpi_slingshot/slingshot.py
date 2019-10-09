@@ -13,6 +13,7 @@ from .config import CONFIG
 import six
 from six.moves import range
 from tqdm import tqdm
+import random
 DEFAULT_PATH_KEY='_path'
 DEFAULT_EXT = 'txt'
 
@@ -31,7 +32,7 @@ def slingshot_single_shot(stone,path):
 	return stone(path)
 
 def get_paths_already_finished_from_cache(cache_path):
-	for path,result in stream_results(cache_path,flatten=False):
+	for path,result in stream_results(cache_path,flatten=False,progress=False):
 		if result:
 			yield path
 
@@ -87,7 +88,9 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		if resume:
 			paths_done = set(list(get_paths_already_finished_from_cache(cache_path)))
 			print('\n>> [Slingshot] already finished %s paths' % len(paths_done))
-			all_paths=sorted(list(set(all_paths)-paths_done))
+			all_paths=list(set(all_paths)-paths_done)
+			all_paths=sorted(all_paths) if shuffle_paths else random.sample(all_paths,len(all_paths))
+
 			print('>> [Slingshot] # of paths:',len(all_paths))
 			if len(all_paths)==1: print(all_paths)
 
@@ -428,9 +431,9 @@ def rconvert(robj):
 ### Loading results
 
 
-def stream_results(path_cache,ext='.jsonl',flatten=False):
+def stream_results(path_cache,ext='.jsonl',flatten=False,progress=True):
 	if 'jsonl' in os.path.basename(path_cache).split('.'):
-		for path,data in stream_jsonl(path_cache,flatten=flatten):
+		for path,data in stream_jsonl(path_cache,flatten=flatten,progress=progress):
 			#if '.ipynb' in path: continue
 			yield (path,data)
 	else:
@@ -438,7 +441,7 @@ def stream_results(path_cache,ext='.jsonl',flatten=False):
 			if (not fn.endswith(ext) and not fn.endswith(ext+'.gz')): continue
 			fnfn=os.path.join(path_cache,fn)
 			#print('>> streaming:',fnfn,'...')
-			for path,data in stream_jsonl(fnfn,flatten=flatten):
+			for path,data in stream_jsonl(fnfn,flatten=flatten,progress=progress):
 				#if '.ipynb' in path: continue
 				yield (path,data)
 
