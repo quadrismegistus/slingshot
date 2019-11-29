@@ -130,8 +130,8 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 				cnum=0
 				for ci,(corpus,cdx) in enumerate(sorted(llp.corpus.load_manifest().items())):
 				#for ci,(corpus,cdx) in enumerate(sorted(load_manifest().items())):
-					print(ci,corpus,cdx['path_txt'])
-					if not os.path.exists(cdx['path_txt']) and not os.path.exists(cdx['path_xml']): continue
+					#print(ci,corpus,cdx['path_txt'])
+					#if not os.path.exists(cdx['path_txt']) and not os.path.exists(cdx['path_xml']): continue
 					cnum+=1
 					num2cname[cnum]=corpus
 					print('\t({num}) {name} ({desc})'.format(num=str(cnum), desc=cdx['desc'], name=cdx['name']))  #.zfill(2).replace('0','')
