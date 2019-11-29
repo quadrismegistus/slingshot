@@ -149,7 +149,8 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 					#if corpus: args.llp_corpus=corpus
 					args.llp_corpus=llp_input.strip()"""
 
-			except ImportError:
+			except ImportError as e:
+				print('!!',e)
 				pass
 
 
