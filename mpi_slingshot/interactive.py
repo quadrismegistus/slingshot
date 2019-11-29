@@ -120,7 +120,7 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 			num2cname={}
 
 			try:
-				#import llp
+				import llp
 				from llp.corpus import load_manifest
 				import pandas as pd
 				#print('>> CORPUS: Type the number or name of an LLP corpus')
@@ -130,6 +130,7 @@ def interactive(parser, SLING_EXT=['py','R','ipynb']):
 				cnum=0
 				#for ci,(corpus,cdx) in enumerate(sorted(llp.corpus.load_manifest().items())):
 				for ci,(corpus,cdx) in enumerate(sorted(load_manifest().items())):
+					print(ci,corpus,cdx['path_txt'])
 					if not os.path.exists(cdx['path_txt']) and not os.path.exists(cdx['path_xml']): continue
 					cnum+=1
 					num2cname[cnum]=corpus
