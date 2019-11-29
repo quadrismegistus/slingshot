@@ -60,9 +60,9 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			#print(llp,dir(llp))
 			corpus = llp.load_corpus(llp_corpus)
 			#print(llp_corpus, corpus)
-			print('llp_pass_path',llp_pass_path)
-			print('llp_pass_text',llp_pass_text)
-			print('llp_method',llp_method)
+			#print('llp_pass_path',llp_pass_path)
+			#print('llp_pass_text',llp_pass_text)
+			#print('llp_method',llp_method)
 			all_paths = [(text.addr if (llp_pass_text or llp_method) else getattr(text,llp_pass_path)) for text in corpus.texts()][:limit]
 			#print(all_paths[:10])
 			if shuffle_paths:
@@ -172,6 +172,13 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		#sling_kwargs2['results_dir']=results_dir
 		if num_runs>1: sling_kwargs2['run']=run
 
+		path_store = None
+		if llp_pass_text and not llp_method:
+			idx = path
+			text = corpus.text(path)
+			path_store = text.addr
+			path = text.path_txt
+
 		if llp_method:
 			idx = path
 			try:
@@ -190,7 +197,8 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 				result=stone(path,*sling_args,**sling_kwargs)
 
 		if result is not None:
-			path_result=(path,result)
+			path_store = path if not path_store else path_store
+			path_result=(path_store,result)
 			if not do_stream_results: results+=[path_result]
 			#if cache_writer:
 			if cache_writer:
@@ -247,6 +255,7 @@ def save_results_pathlist(results_fnfn_pathlist,results_fnfn_metadata,paths,path
 	path_pathlists = CONFIG.get('PATH_PATHLISTS','')
 	pathlist_path_source = os.path.join(path_pathlists,path_source if path_source else '')
 
+	#print(path_source,'!?!?!?')
 	if not path_source:
 		pass
 	elif os.path.exists(path_source) and is_csv(path_source):
