@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
 	parser.add_argument('-llp_corpus',help='Specify a corpus name (requires Literary Language Processing module)')
 	parser.add_argument('-llp_method',help='A method on the LLP text object')
-	parser.add_argument('-llp_pass',help='Name of path or other text attribute to pass (path_txt, path_freqs, etc)')
+	parser.add_argument('-llp_pass',help='Name of path or other text attribute to pass (path_txt, path_freqs, etc)',default='path')
 	parser.add_argument('-llp_pass_text',help='Pass the LLP text object itself, not the path',action='store_true')
 
 	parser.add_argument('-ext',help='The file extension files in -path PATH must have in order to be considered')

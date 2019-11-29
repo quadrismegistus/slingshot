@@ -60,6 +60,9 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			#print(llp,dir(llp))
 			corpus = llp.load_corpus(llp_corpus)
 			#print(llp_corpus, corpus)
+			print('llp_pass_path',llp_pass_path)
+			print('llp_pass_text',llp_pass_text)
+			print('llp_method',llp_method)
 			all_paths = [(text.addr if (llp_pass_text or llp_method) else getattr(text,llp_pass_path)) for text in corpus.texts()][:limit]
 			#print(all_paths[:10])
 			if shuffle_paths:
