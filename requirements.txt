@@ -3,3 +3,5 @@ numpy
 ujson
 unicodecsv
 smart_open
+simplejson
+tqdm

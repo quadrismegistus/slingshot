@@ -86,10 +86,19 @@ class SkipgramsSampler(object):
 					yield line.split()
 
 
+class MultiSkip(object):
+	def __init__(self, skips):
+		self.skips=skips
+
+	def __iter__(self):
+		for skip in self.skips:
+			for x in skip:
+				yield x
+
 ### WORD2VEC
 
 # STONE
-def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir='./',skipgram_size=10,run=None,
+def gen_word2vec_model_from_skipgrams(path_to_skipgram_file_or_files,results_dir='./',skipgram_size=10,run=None,
 									num_skips_wanted=None, num_workers=8, min_count=10, num_dimensions=100, sg=1, num_epochs=None):
 
 	"""
@@ -100,7 +109,13 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file,results_dir='./',ski
 	logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 	# Load skipgrams
-	skips = gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)
+	if type(path_to_skipgram_file_or_files) not in {list,tuple}:
+		path_to_skipgram_file = path_to_skipgram_file_or_files
+		skips = gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)
+	else:
+		skips = MultiSkip([(gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)) for path_to_skipgram_file in path_to_skipgram_file_or_files])
+		path_to_skipgram_file = path_to_skipgram_file_or_files[0]
+
 
 	# Generate model
 	model = gensim.models.Word2Vec(skips, workers=num_workers, sg=sg, min_count=min_count, size=num_dimensions, window=skipgram_size)
