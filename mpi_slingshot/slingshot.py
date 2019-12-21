@@ -59,16 +59,19 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 			import llp
 			#print(llp,dir(llp))
 			corpus = llp.load_corpus(llp_corpus)
+			#print(corpus.path_metadata)
 			#print(llp_corpus, corpus)
 			#print('llp_pass_path',llp_pass_path)
 			#print('llp_pass_text',llp_pass_text)
 			#print('llp_method',llp_method)
+			#print(corpus.texts())
 			all_paths = [(text.addr if (llp_pass_text or llp_method) else getattr(text,llp_pass_path)) for text in corpus.texts()][:limit]
 			#print(all_paths[:10])
 			if shuffle_paths:
 				import random
 				random.shuffle(all_paths)
-		except ImportError:
+		except ImportError as e:
+			print('!!',e)
 			pass
 
 	# Get paths!
@@ -173,6 +176,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		if num_runs>1: sling_kwargs2['run']=run
 
 		path_store = None
+
 		if llp_pass_text and not llp_method:
 			idx = path
 			text = corpus.text(path)
