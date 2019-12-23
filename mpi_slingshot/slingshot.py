@@ -483,8 +483,8 @@ def stream_jsonl(fn,flatten=False,progress=True):
 
 def writegen(fnfn,generator,header=None,args=[],kwargs={}):
 	if 'jsonl' in fnfn.split('.'): return writegen_jsonl(fnfn,generator,args=args,kwargs=kwargs)
-	with codecs.open(fnfn,'w',encoding='utf-8') as of:
-		for i,dx in enumerate():
+	with open(fnfn,'w') as of:
+		for i,dx in enumerate(generator()):
 			if not header: header=sorted(dx.keys())
 			if not i: of.write('\t'.join(header) + '\n')
 			of.write('\t'.join([six.text_type(dx.get(h,'')) for h in header]) + '\n')
