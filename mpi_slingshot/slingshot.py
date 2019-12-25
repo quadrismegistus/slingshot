@@ -90,7 +90,11 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 	if cache_results:
 		if overwrite and os.path.exists(cache_path): delete_files_from_folder(cache_path)
 		if overwrite and os.path.exists(results_dir): delete_files_from_folder(results_dir)
-		if not os.path.exists(cache_path): os.makedirs(cache_path)
+		if not os.path.exists(cache_path):
+			try:
+				os.makedirs(cache_path)
+			except FileExistsError:
+				pass
 		if resume:
 			paths_done = set(list(get_paths_already_finished_from_cache(cache_path)))
 			print('\n>> [Slingshot] already finished %s paths' % len(paths_done))
