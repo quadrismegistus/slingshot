@@ -475,7 +475,7 @@ def stream_jsonl(fn,flatten=False,progress=True):
 	#print('>> [Slingshot] streaming:',fn,'...')
 	if progress: num_lines = get_num_lines(fn)
 	with open(fn) as f:
-		looper = tqdm(f,total=num_lines) if progress else f
+		looper = tqdm(f,total=num_lines,desc=fn) if progress else f
 		for ln in looper:
 			path,data=json.loads(ln)
 			if not flatten or type(data)!=list:
