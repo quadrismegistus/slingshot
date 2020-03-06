@@ -152,6 +152,11 @@ if __name__ == '__main__':
 
 	if args.sbatch_args: Scmd+=' -sbatch_args "%s"' % args.sbatch_args
 
+	try:
+		args.numruns=int(args.numruns)
+	except ValueError:
+		args.numruns=1
+	
 	if args.numruns>1:
 		try:
 			int(args.numruns)

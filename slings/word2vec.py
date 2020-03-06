@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import os,codecs
 from six.moves import range
+import time,gzip,random
 
 STONES = ['save_skipgrams_from_txt_paths','gen_word2vec_model_from_skipgrams','model_words']
 
@@ -70,7 +71,7 @@ class SkipgramsSampler(object):
 	def get_num_lines(self):
 		then=time.time()
 		print('>> [SkipgramsSampler] counting lines in',self.fn)
-		with gzip.open(self.fn,'rb') as f:
+		with gzip.open(self.fn,'rb') if self.fn.endswith('.gz') else open(self.fn) as f:
 			for i,line in enumerate(f):
 				pass
 		num_lines=i+1
@@ -80,26 +81,33 @@ class SkipgramsSampler(object):
 
 	def __iter__(self):
 		i=0
-		with gzip.open(self.fn,'rb') as f:
+		with gzip.open(self.fn,'rb') if self.fn.endswith('.gz') else open(self.fn) as f:
 			for i,line in enumerate(f):
 				if i in self.line_nums_wanted:
 					yield line.split()
 
 
 class MultiSkip(object):
-	def __init__(self, skips):
+	def __init__(self, skips,labels=[]):
 		self.skips=skips
+		self.labels=labels
 
 	def __iter__(self):
-		for skip in self.skips:
-			for x in skip:
-				yield x
+		for i,skip in enumerate(self.skips):
+			if self.labels and i<len(self.labels):
+				label=self.labels[i]
+				for x in skip:
+					skip2=[w+'_'+label for w in x]
+					yield skip2
+			else:
+				for x in skip:
+					yield x
 
 ### WORD2VEC
 
 # STONE
 def gen_word2vec_model_from_skipgrams(path_to_skipgram_file_or_files,results_dir='./',skipgram_size=10,run=None,
-									num_skips_wanted=None, num_workers=8, min_count=10, num_dimensions=100, sg=1, num_epochs=None):
+									num_skips_wanted=None, num_workers=8, min_count=100, num_dimensions=100, sg=1, num_epochs=None,labels=[]):
 
 	"""
 	STONE CERTIFIED
@@ -113,7 +121,8 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file_or_files,results_dir
 		path_to_skipgram_file = path_to_skipgram_file_or_files
 		skips = gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)
 	else:
-		skips = MultiSkip([(gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)) for path_to_skipgram_file in path_to_skipgram_file_or_files])
+		skips = MultiSkip([(gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)) for path_to_skipgram_file in path_to_skipgram_file_or_files],
+						 labels=labels)
 		path_to_skipgram_file = path_to_skipgram_file_or_files[0]
 
 
@@ -124,10 +133,11 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file_or_files,results_dir
 	ofn_l = [os.path.splitext(os.path.basename(path_to_skipgram_file))[0]]
 	if run: ofn_l+=['run=%s' % str(run).zfill(2)]
 	ofn = '.'.join(ofn_l) + '.txt'
-	ofnfn=os.path.join(results_dir,'word2vec_models',ofn)
+	#ofnfn=os.path.join(results_dir,'word2vec_models',ofn)
+	ofnfn=os.path.join(results_dir,ofn)
 	ofnfn_vocab=os.path.splitext(ofnfn)[0]+'.vocab.txt'
 	ofolder=os.path.dirname(ofnfn)
-	ofnfn=ofnfn+'.gz'						# add gzip compression for model
+	ofnfn=ofnfn+'.gz'                       # add gzip compression for model
 	if not os.path.exists(ofolder):
 		try:
 			os.makedirs(ofolder)
