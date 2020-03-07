@@ -83,6 +83,7 @@ class SkipgramsSampler(object):
 		i=0
 		with gzip.open(self.fn,'rb') if self.fn.endswith('.gz') else open(self.fn) as f:
 			for i,line in enumerate(f):
+				line=line.decode('utf-8')
 				if i in self.line_nums_wanted:
 					yield line.split()
 
