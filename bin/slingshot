@@ -156,7 +156,7 @@ if __name__ == '__main__':
 		args.numruns=int(args.numruns)
 	except ValueError:
 		args.numruns=1
-	
+
 	if args.numruns>1:
 		try:
 			int(args.numruns)
@@ -209,9 +209,9 @@ if __name__ == '__main__':
 	#sling_args=[]
 	sling_kwargs={}
 	stone_args=None
-	if args.stone_args:
+	if args.stone_kwargs:
 		import ujson as json
-		stone_args=json.loads(args.stone_args)
+		stone_args=json.loads(args.stone_kwargs)
 		#if type(stone_args) in [list,tuple,set]:
 		#	sling_args+=stone_args
 		if type(stone_args) in {dict}:
