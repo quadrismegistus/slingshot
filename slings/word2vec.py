@@ -117,6 +117,7 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file_or_files,results_dir
 	logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 	# Load skipgrams
+	if '|' in path_to_skipgram_file_or_files: path_to_skipgram_file_or_files=path_to_skipgram_file_or_files.split('|')
 	if type(path_to_skipgram_file_or_files) not in {list,tuple}:
 		path_to_skipgram_file = path_to_skipgram_file_or_files
 		skips = gensim.models.word2vec.LineSentence(path_to_skipgram_file) if not num_skips_wanted else SkipgramsSampler(path_to_skipgram_file, num_skips_wanted)
