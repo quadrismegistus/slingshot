@@ -116,6 +116,8 @@ def gen_word2vec_model_from_skipgrams(path_to_skipgram_file_or_files,results_dir
 	import gensim,logging
 	logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
+	print('labels:',labels)
+
 	# Load skipgrams
 	if '|' in path_to_skipgram_file_or_files: path_to_skipgram_file_or_files=path_to_skipgram_file_or_files.split('|')
 	if type(path_to_skipgram_file_or_files) not in {list,tuple}:
