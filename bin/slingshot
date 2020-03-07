@@ -31,8 +31,8 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-code','-sling',help="Path to the python or R file of code (ending in .py or .R)")
 	parser.add_argument('-func','-stone',help='The name of the function in the code that takes a string filepath')
-	parser.add_argument('-args','-stone_args',help='Positional arguments for the function? (JSON-formatted list)',default='')
-	parser.add_argument('-kwargs','-stone_kwargs',help='Keyword arguments for the function? (JSON-formatted dictionary)',default='')
+	parser.add_argument('-args',help='Positional arguments for the function? (JSON-formatted list)',default='')
+	parser.add_argument('-kwargs',help='Keyword arguments for the function? (JSON-formatted dictionary)',default='')
 
 	parser.add_argument('-pathlist',help='A text file with a path per line')
 	parser.add_argument('-pathkey',help='If text file given is a TSV, which column is the path located under?',default='')
@@ -209,13 +209,19 @@ if __name__ == '__main__':
 	#sling_args=[]
 	sling_kwargs={}
 	stone_args=None
-	if args.stone_kwargs:
+	if args.args:
 		import ujson as json
-		stone_args=json.loads(args.stone_kwargs)
+		args_json=json.loads(args.kwargs)
+		if type(args_json) in {list}:
+			stone_args=args_json
+	
+	if args.kwargs:
+		import ujson as json
+		kwargs_json=json.loads(args.kwargs)
 		#if type(stone_args) in [list,tuple,set]:
 		#	sling_args+=stone_args
-		if type(stone_args) in {dict}:
-			for k,v in list(stone_args.items()):
+		if type(kwargs_json) in {dict}:
+			for k,v in list(kwargs_json.items()):
 				sling_kwargs[k]=v
 
 
