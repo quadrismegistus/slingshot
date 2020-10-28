@@ -14,6 +14,7 @@ import six
 from six.moves import range
 from tqdm import tqdm
 import random
+import inspect
 DEFAULT_PATH_KEY='_path'
 DEFAULT_EXT = 'txt'
 
@@ -36,8 +37,50 @@ def get_paths_already_finished_from_cache(cache_path):
 		if result:
 			yield path
 
+def now(now=None):
+	import datetime as dt
+	if not now:
+		now=dt.datetime.now()
+	elif type(now) in [int,float,str]:
+		now=dt.datetime.fromtimestamp(now)
 
-def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,do_stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=False,savecsv='',resume=False,overwrite=False,parallel=1,llp_pass_path='path'):
+	return '{0}-{1}-{2} {3}:{4}:{5}'.format(now.year,str(now.month).zfill(2),str(now.day).zfill(2),str(now.hour).zfill(2),str(now.minute).zfill(2),str(now.second).zfill(2))
+
+data_slingshot='.data_slingshot/'
+
+def prepare_slingshot(func, objects, savedir, **kwargs):
+    # init savedir
+    if not savedir:
+        savedir=f'data_slingshot/{func.__name__}/{now().split()[0]}'
+    if not os.path.exists(savedir): os.makedirs(savedir)
+    path_code=f'{savedir}/func.py'
+    path_objs=f'{savedir}/input.jsonl'
+    name_func=func.__name__
+    
+    # get source of function
+    func_txt=inspect.getsource(func)
+    with open(path_code,'w') as of:
+        of.write(func_txt)
+    
+    # save objects
+    with open(path_objs,'w') as of:
+        for obj in objects:
+            of.write(json.dumps(obj)+'\n')
+
+    # call command
+    cmd=f'slingshot -code {path_code} -func {name_func} -pathlist {path_objs} -savedir {savedir} -resume'
+    for k,v in kwargs.items():
+        cmd+=f' -{k} {v}' if v!=True else f' -{k}'
+    return cmd
+
+def gather(savedir):
+    return list(stream_results(os.path.join(savedir,'cache')))
+
+# convenience
+shoot=prepare_slingshot
+
+
+def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_corpus=None,limit=None,path_source=None,stone=None,path_key=PATH_KEY,path_ext=None,path_prefix='',path_suffix='',cache_results=True,cache_path=None,save_results=True,results_dir=None,shuffle_paths=True,do_stream_results=True,save_txt=True,txt_maxcols=TXT_MAXCOLS,sling_args=[],sling_kwargs={},num_runs=1,oneshot=False,llp_pass_text=False,llp_method='',progress_bar=True,savecsv='',resume=False,overwrite=False,parallel=1,llp_pass_path='path'):
 	"""
 	Main function
 	"""
@@ -220,7 +263,7 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
 		#################################################
 		#print('>> Clone #%s slings %s at #%s of %s %s enemies!' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),pronoun,num_paths))
 		#print('>> Clone #%s slings %s at Target #%s (of %s)' % (str(rank).zfill(zlen_rank),stone_name,str(i+1).zfill(zlen),num_paths))
-		if not progress_bar: print('>> Clone #%s -- slings --> Target #%s / %s' % (str(rank).zfill(zlen_rank),str(i+1).zfill(zlen),num_paths))
+		#if not progress_bar: print('>> Clone #%s -- slings --> Target #%s / %s' % (str(rank).zfill(zlen_rank),str(i+1).zfill(zlen),num_paths))
 	if cache_writer: cache_writer.close()
 
 	# Gather the results
