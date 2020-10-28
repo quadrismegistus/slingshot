@@ -1,0 +1,5 @@
+>> SLINGSHOT COMMAND:
+slingshot -code _data_/func.py -func parse -pathlist /home/rj416/code/slingshot/tests/_data_/input.jsonl -savedir _data_ -parallel 4 -progress
+
+>> EXECUTING COMMAND:
+mpirun  -np 4 python -c "from mpi_slingshot import slingshot; slingshot(path_sling='_data_/func.py', stone_name='parse', sling_kwargs={}, path_source='/home/rj416/code/slingshot/tests/_data_/input.jsonl', path_ext='None', path_key='', path_prefix='', path_suffix='', limit=None, oneshot=False,results_dir='_data_', cache_results=True, save_results=True, txt_maxcols=25000, num_runs=1, llp_corpus='', llp_method='',llp_pass_text=False, progress_bar=True, savecsv='', overwrite=False, resume=True, parallel=4, llp_pass_path='path')"  | tee /dev/tty > _data_/output.txt

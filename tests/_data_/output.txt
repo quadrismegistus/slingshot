@@ -1,0 +1,34 @@
+
+>> [Slingshot] already finished 103 paths
+>> [Slingshot] # of paths: 82
+
+>> [Slingshot] initializing MPI with size 4 and rank 0
+>> [Slingshot]: 82 paths divided into 4 segments
+Slingshot-001:   0%|                                                         | 0/21 [00:00<?, ?it/s]
+>> [Slingshot] already finished 103 paths
+>> [Slingshot] # of paths: 82
+>> [Slingshot] initializing MPI with size 4 and rank 1
+
+Slingshot-002:   0%|                                                         | 0/21 [00:00<?, ?it/s][A
+>> [Slingshot] already finished 103 paths
+>> [Slingshot] # of paths: 82
+>> [Slingshot] initializing MPI with size 4 and rank 3
+
+
+
+
+>> [Slingshot] already finished 103 paths
+>> [Slingshot] # of paths: 82
+>> [Slingshot] initializing MPI with size 4 and rank 2
+
+
+Slingshot-004:   0%|                                                         | 0/20 [00:00<?, ?it/s][A[A[ASlingshot-003:   0%|                                                         | 0/20 [00:00<?, ?it/s][A[ASlingshot-001: 100%|█████████████████████████████████████████████| 21/21 [00:00<00:00, 17102.99it/s]Slingshot-002: 100%|█████████████████████████████████████████████| 21/21 [00:00<00:00, 16958.10it/s]Slingshot-003: 100%|█████████████████████████████████████████████| 20/20 [00:00<00:00, 17001.64it/s]Slingshot-004: 100%|█████████████████████████████████████████████| 20/20 [00:00<00:00, 16269.60it/s]
+
+
+
+>> SLINGSHOT: Finished parsing in 0.030358 seconds.
+>> save_txt: found 2 keys in 0s
+['num', 'num_rand'] ...
+>> saved: _data_/results.txt
+>> save_txt: saved in 0s
+>> SLINGSHOT: Finished everything in 0.055024 seconds!
