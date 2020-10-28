@@ -5,3 +5,5 @@ MANIFEST.in
 build/
 dist/
 mpi_slingshot.egg-info/
+_data_*
+data_slingshot

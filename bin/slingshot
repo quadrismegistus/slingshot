@@ -313,9 +313,9 @@ if __name__ == '__main__':
 	#import subprocess
 	#subprocess.check_output(command,shell=True)
 	if not IS_INTERACTIVE and not args.dryrun:
-		print('\n>> [Slingshot] starting at %s...' % now(seconds=True))
-		print('>> [Slingshot] executing:',Scmd)
-		print(otxt)
+		#print('\n>> [Slingshot] starting at %s...' % now(seconds=True))
+		#print('>> [Slingshot] executing:',Scmd)
+		#print(otxt)
 		os.system(command)
 	else:
 		print('## In order to execute slingshot, you must paste in either of the following commands,')
