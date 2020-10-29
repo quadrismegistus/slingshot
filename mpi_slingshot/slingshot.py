@@ -76,7 +76,7 @@ def prepare_slingshot(func, objects, savedir, overwrite=False, **kwargs):
     # call command
     cmd=f'slingshot -code {path_code} -func {name_func} -pathlist {path_objs} -savedir {savedir} -resume'
     for k,v in kwargs.items():
-        cmd+=f' -{k} {v}' if v!=True else f' -{k}'
+        cmd+=f' -{k} {v}' if v is not True else f' -{k}'
     return cmd
 
 def gather(savedir):
