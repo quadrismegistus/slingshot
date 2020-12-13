@@ -35,6 +35,7 @@ def slingshot_single_shot(stone,path):
 def get_paths_already_finished_from_cache(cache_path):
     for path,result in stream_results(cache_path,flatten=False,progress=False):
         if result:
+            if type(path)==list: path=tuple(path)
             yield path
 
 def now(now=None):
@@ -48,25 +49,30 @@ def now(now=None):
 
 data_slingshot='.data_slingshot/'
 
-def prepare_slingshot(func, objects, savedir, overwrite=False, **kwargs):
+def prepare_slingshot(func, objects, path_src=None, savedir=None, overwrite=False, **kwargs):
     # init savedir
-    if not savedir:
-        savedir=f'data_slingshot/{func.__name__}/{now().split()[0]}'
+    funcname = func if type(func)==str else func.__name__
+    if type(func)==str and (not path_src or not os.path.exists(path_src)):
+        print('`func` must be real function object, or if a string, `path_src` must be specified.')
+        return 
+
+    # init
+    if not savedir: savedir=f'_data_/{funcname}'
+    # if not savedir: savedir=f'_data_/{funcname}/{now().split()[0]}'
     if os.path.exists(savedir) and overwrite: shutil.rmtree(savedir)
     if not os.path.exists(savedir): os.makedirs(savedir)
-        
     if not 'resume' in kwargs: kwargs['resume']=True
     if not 'nosave' in kwargs: kwargs['nosave']=True
-    
-       
     path_code=f'{savedir}/func.py'
     path_objs=f'{savedir}/input.jsonl'
-    name_func=func.__name__
 
     # get source of function
-    func_txt=inspect.getsource(func)
-    with open(path_code,'w') as of:
-        of.write(func_txt)
+    if type(func)!=str:
+        func_txt=inspect.getsource(func)
+        with open(path_code,'w') as of:
+            of.write(func_txt)
+    else:
+        shutil.copyfile(path_src,path_code)
 
     # save objects
     with open(path_objs,'w') as of:
@@ -74,7 +80,7 @@ def prepare_slingshot(func, objects, savedir, overwrite=False, **kwargs):
             of.write(json.dumps(obj)+'\n')
 
     # call command
-    cmd=f'slingshot -code {path_code} -func {name_func} -pathlist {path_objs} -savedir {savedir} -resume'
+    cmd=f'slingshot -code {path_code} -func {funcname} -pathlist {path_objs} -savedir {savedir} -resume'
     for k,v in kwargs.items():
         cmd+=f' -{k} {v}' if v is not True else f' -{k}'
     return cmd
@@ -147,12 +153,15 @@ def slingshot(path_sling=None,stone_name=None,stone_args=None,paths=None,llp_cor
                 pass
         if resume:
             paths_done = set(list(get_paths_already_finished_from_cache(cache_path)))
-#             print('\n>> [Slingshot] already finished %s of %s' % (len(paths_done),len(all_paths)))
-            all_paths=list(set(all_paths)-paths_done)
-            all_paths=sorted(all_paths) if shuffle_paths else random.sample(all_paths,len(all_paths))
+            #print('\n>> [Slingshot] already finished %s of %s' % (len(paths_done),len(all_paths)))
+            try:
+                all_paths=list(set(all_paths)-paths_done)
+            except TypeError:
+                pass
 
-            #print('>> [Slingshot] # of paths:',len(all_paths))
-            if len(all_paths)==1: print(all_paths)
+        import random
+        if shuffle_paths: random.shuffle(all_paths)
+
 
     ## RUNS?
     # Multiply paths by runs
@@ -418,6 +427,17 @@ def get_paths_from_pathlist(_fnfn,sep='\t',path_key=PATH_KEY,path_prefix='',path
     _fnfn_is_csv=is_csv(_fnfn,sep=sep)
     if _fnfn_is_csv:
         return get_paths_from_csv(_fnfn,path_key=path_key,sep=sep,path_prefix=path_prefix,path_suffix=path_suffix)
+    elif _fnfn.endswith('jsonl'):
+        import json
+        jsons=[]
+        with open(_fnfn) as f:
+            for ln in f:
+                try:
+                    d=json.loads(ln.strip())
+                    jsons.append(d)
+                except (ValueError,json.JSONDecodeError) as e:
+                    pass
+        return jsons
     else:
         with open(_fnfn) as pf:
             paths=[line.strip() for line in pf]
@@ -444,10 +464,12 @@ def load_paths(path_source,path_ext,limit,shuffle_paths,path_key=PATH_KEY,path_p
     if not paths:
         print('!! no paths given or found at %s' % path_source if path_source else '')
         return
-    paths=sorted(list(set(paths)))
+    #paths=sorted(list(set(paths)))
+    paths=list(paths)
     paths=paths[:limit]
     if shuffle_paths:
         random.shuffle(paths)
+    paths=[tuple(x) if type(x)==list else x for x in paths]
     return paths
 
 
